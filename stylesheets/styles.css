@@ -6,9 +6,11 @@ body {
 	background: #111111;
 	padding: 6px;
 	border: 1px dashed #cccccc;
+	overflow: hidden;
 }
 .comment { 
 	color: #777777; 
+	white-space: nowrap;
 }
 .hexidecimal { 
 	color: #007777; 

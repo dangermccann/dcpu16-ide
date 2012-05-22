@@ -1,3 +1,4 @@
+// https://raw.github.com/gibbed/0x10c-Notes/master/hardware/lem1802.txt
 function Monitor(_emulator) {
 	this.id = 0x7349f615;
 	this.version = 0x1802;
@@ -5,8 +6,7 @@ function Monitor(_emulator) {
 	this.emulator = _emulator;
 	
 	
-	
-	this.font = [
+	this.defaultFont = this.font = [
 		0xB79E, 0x388E, 0x722C, 0x75F4, 0x19BB, 0x7F8F, 0x85F9, 0xB158, 0x242E, 0x2400, 0x082A, 0x0800, 0x0008, 0x0000, 0x0808, 0x0808,
 		0x00FF, 0x0000, 0x00F8, 0x0808, 0x08F8, 0x0000, 0x080F, 0x0000, 0x000F, 0x0808, 0x00FF, 0x0808, 0x08F8, 0x0808, 0x08FF, 0x0000,
 		0x080F, 0x0808, 0x08FF, 0x0808, 0x6633, 0x99CC, 0x9933, 0x66CC, 0xFEF8, 0xE080, 0x7F1F, 0x0701, 0x0107, 0x1F7F, 0x80E0, 0xF8FE,
@@ -24,7 +24,7 @@ function Monitor(_emulator) {
 		0x7C14, 0x0800, 0x0814, 0x7C00, 0x7C04, 0x0800, 0x4854, 0x2400, 0x043E, 0x4400, 0x3C40, 0x7C00, 0x1C60, 0x1C00, 0x7C30, 0x7C00,
 		0x6C10, 0x6C00, 0x4C50, 0x3C00, 0x6454, 0x4C00, 0x0836, 0x4100, 0x0077, 0x0000, 0x4136, 0x0800, 0x0201, 0x0201, 0x0205, 0x0200]
 
-	this.palette = [
+	this.defaultPalette = this.palette = [
 		0x000000, 0x0000aa, 0x00aa00, 0x00aaaa, 0xaa0000, 0xaa00aa, 0xaa5500, 0xaaaaaa,
 		0x555555, 0x5555ff, 0x55ff55, 0x55ffff, 0xff5555, 0xff55ff, 0xffff55, 0xffffff
 	];
@@ -55,9 +55,11 @@ Monitor.prototype.interrupt = function() {
 			break;
 			
 		case 1:
+			this.memMapFont(bVal);
 			break;
 			
 		case 2:
+			this.memMapPalette(bVal);
 			break;
 			
 		case 3:
@@ -65,9 +67,11 @@ Monitor.prototype.interrupt = function() {
 			break;
 			
 		case 4:
+			this.memDumpFont(bVal);
 			break;
 			
 		case 5:
+			this.memDumpPalette(bVal);
 			break;
 	}
 }
@@ -114,6 +118,40 @@ Monitor.prototype.drawGlyph = function(x, y, glyph, fg, bg, blink) {
 Monitor.prototype.disconnect = function() {
 	this.context.fillStyle = "#777777";
 	this.context.fillRect(0, 0, 128, 96);
+}
+
+Monitor.prototype.memMapFont = function(offset) {
+	if(offset === 0)
+		this.font = this.defaultFont;
+	else {
+		for(var i = 0; i < 256; i++) {
+			this.font[i] = this.emulator.RAM[offset+i];
+		}
+	}
+}
+
+Monitor.prototype.memMapPalette = function(offset) {
+	if(offset === 0)
+		this.palette = this.defaultPalette;
+	else {
+		for(var i = 0; i < 16; i++) {
+			this.palette[i] = this.emulator.RAM[offset+i];
+		}
+	}
+}
+
+Monitor.prototype.memDumpFont = function(offset) {
+	for(var i = 0; i < 256; i++) {
+		this.emulator.RAM[offset+i] = this.font[i];
+	}
+	this.emulator.CPU_CYCLE += 256;
+}
+
+Monitor.prototype.memDumpPalette = function(offset) {
+	for(var i = 0; i < 16; i++) {
+		this.emulator.RAM[offset+i] = this.font[i];
+	}
+	this.emulator.CPU_CYCLE += 16;
 }
 
 Monitor.prototype.setBorderColor = function(color) {

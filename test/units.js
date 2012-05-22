@@ -632,6 +632,44 @@ function units() {
 		
 	});
 	
+	module("Tokenizer Module");
+	
+	test("Basic Tokens Test", function() { 
+		var input = "; some comment for the code \n" +
+					 "ADD A, 0x1234\n" +
+					 ":my_label dat 1234 0x9876\n" +
+					 "  SUB [ 4 * 4 ] ; do some math \n" +
+					 "JSR imy_label\n" +
+					 "dat \"my string\", 0";
+		
+		var lines = Tokenizer.tokenize(input);
+		equal(lines.length, 6, "6 lines tokenized");
+		equal(lines[0][0].type, "comment", "Line 1 comment");
+		equal(lines[1][0].type, "command", "Line 2 command");
+		equal(lines[1][2].type, "register", "Line 2 register");
+		equal(lines[1][3].type, "comma", "Line 2 comma");
+		equal(lines[1][5].type, "hexidecimal", "Line 2 hexidecimal");
+		equal(lines[2][0].type, "label_def", "Line 3 label_def");
+		equal(lines[2][2].type, "reserved_word", "Line 3 reserved_word");
+		equal(lines[2][4].type, "decimal", "Line 3 decmial");
+		equal(lines[3][1].type, "command", "Line 4 command");
+		equal(lines[3][3].type, "open_bracket", "Line 4 open_bracket");
+		equal(lines[3][7].type, "operator", "Line 4 operator");
+		equal(lines[3][11].type, "close_bracket", "Line 4 close_bracket");
+		equal(lines[3][13].type, "comment", "Line 4 comment");
+		equal(lines[4][2].type, "label_ref", "Line 5 label_ref");
+		equal(lines[5][2].type, "string", "Line 6 string");
+		equal(lines[5][3].type, "comma", "Line 6 comma");
+		
+		
+	});
+	
+	test("Invalid Token Test", function() { 
+		raises(function() {
+			Tokenizer.tokenize("(*&^%$#HDBGFDAS");
+		}, "Test invalid token");
+	});
+	
 	
 };
 
