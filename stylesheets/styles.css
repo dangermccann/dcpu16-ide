@@ -1,0 +1,50 @@
+body { 
+	font-family: courier, 'courier new', 'fixed-width'; 
+	font-size: 12px;
+}
+.assembly {
+	background: #111111;
+	padding: 6px;
+	border: 1px dashed #cccccc;
+}
+.comment { 
+	color: #777777; 
+}
+.hexidecimal { 
+	color: #007777; 
+}
+.decimal { 
+	color: #0077ff; 
+}
+.string { 
+	color: #007700 
+}
+.label_def { 
+	color: #6666ff 
+}
+.label_ref { 
+	color: #aaaaff 
+}
+.command { 
+	color: #ffffff; 
+	font-weight: bold;
+}
+.reserved_word { 
+	color: #aaaa00; 
+}
+.open_bracket { 
+	color: #dddddd; 
+}	
+.close_bracket { 
+	color: #dddddd; 
+} 
+.comma { 
+	color: #dddddd; 
+}
+.operator { 
+	color: #dddddd; 
+}
+.register { 
+	color: #aa33aa; 
+}
+.space {  }

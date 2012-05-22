@@ -1,0 +1,140 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+	<head>
+		<link type="text/css" href="stylesheets/styles.css" rel="stylesheet" />
+		<script src="http://code.jquery.com/jquery-latest.js"></script>
+		<script type="text/javascript" src="javascript/emulator.js"></script>
+		<script type="text/javascript" src="javascript/lem1820.js"></script>
+		<script type="text/javascript" src="javascript/assembler.js"></script>
+		
+		
+		<script>
+			$(document).ready(function(){
+
+				var program = [
+					
+					Utils.makeInstruction(OPERATION_SET, Literals.L_16, REGISTER_X),
+					
+					// clear background
+					Utils.makeInstruction(	OPERATION_SET, Values.NEXT_WORD_LITERAL, 
+											REGISTER_X + Values.REGISTER_VALUE_OFFSET), 
+											Utils.makeVideoCell(0x20, 0, 1, 0xa),
+					Utils.makeInstruction(OPERATION_ADD, Literals.L_1, REGISTER_X),
+					Utils.makeInstruction(OPERATION_IFN, REGISTER_X, Values.NEXT_WORD_LITERAL), 0x190,
+					Utils.makeInstruction(OPERATION_SUB, Literals.L_6, REGISTER_PC),
+					
+					
+					Utils.makeInstruction(OPERATION_SET, Literals.L_16, REGISTER_X),
+					
+					// h
+					Utils.makeInstruction(	OPERATION_SET, Values.NEXT_WORD_LITERAL, 
+											REGISTER_X + Values.REGISTER_VALUE_OFFSET), 
+											Utils.makeVideoCell(0x68, 0, 1, 0xa),
+					Utils.makeInstruction(OPERATION_ADD, Literals.L_1, REGISTER_X),
+					
+					// e
+					Utils.makeInstruction(	OPERATION_SET, Values.NEXT_WORD_LITERAL, 
+											REGISTER_X + Values.REGISTER_VALUE_OFFSET), 
+											Utils.makeVideoCell(0x65, 0, 1, 0xa),
+					Utils.makeInstruction(OPERATION_ADD, Literals.L_1, REGISTER_X),
+					
+					// l
+					Utils.makeInstruction(	OPERATION_SET, Values.NEXT_WORD_LITERAL, 
+											REGISTER_X + Values.REGISTER_VALUE_OFFSET), 
+											Utils.makeVideoCell(0x6c, 0, 1, 0xa),
+					Utils.makeInstruction(OPERATION_ADD, Literals.L_1, REGISTER_X),
+					
+					// l
+					Utils.makeInstruction(	OPERATION_SET, Values.NEXT_WORD_LITERAL, 
+											REGISTER_X + Values.REGISTER_VALUE_OFFSET), 
+											Utils.makeVideoCell(0x6c, 0, 1, 0xa),
+					Utils.makeInstruction(OPERATION_ADD, Literals.L_1, REGISTER_X),
+					
+					// o
+					Utils.makeInstruction(	OPERATION_SET, Values.NEXT_WORD_LITERAL, 
+											REGISTER_X + Values.REGISTER_VALUE_OFFSET), 
+											Utils.makeVideoCell(0x6f, 0, 1, 0xa),
+					Utils.makeInstruction(OPERATION_ADD, Literals.L_1, REGISTER_X),
+					
+					// 
+					Utils.makeInstruction(	OPERATION_SET, Values.NEXT_WORD_LITERAL, 
+											REGISTER_X + Values.REGISTER_VALUE_OFFSET), 
+											Utils.makeVideoCell(0x20, 0, 1, 0xa),
+					Utils.makeInstruction(OPERATION_ADD, Literals.L_1, REGISTER_X),
+					
+					// w
+					Utils.makeInstruction(	OPERATION_SET, Values.NEXT_WORD_LITERAL, 
+											REGISTER_X + Values.REGISTER_VALUE_OFFSET), 
+											Utils.makeVideoCell(0x77, 0, 1, 0xa),
+					Utils.makeInstruction(OPERATION_ADD, Literals.L_1, REGISTER_X),
+					
+					// o
+					Utils.makeInstruction(	OPERATION_SET, Values.NEXT_WORD_LITERAL, 
+											REGISTER_X + Values.REGISTER_VALUE_OFFSET), 
+											Utils.makeVideoCell(0x6f, 0, 1, 0xa),
+					Utils.makeInstruction(OPERATION_ADD, Literals.L_1, REGISTER_X),
+					
+					// r
+					Utils.makeInstruction(	OPERATION_SET, Values.NEXT_WORD_LITERAL, 
+											REGISTER_X + Values.REGISTER_VALUE_OFFSET), 
+											Utils.makeVideoCell(0x72, 0, 1, 0xa),
+					Utils.makeInstruction(OPERATION_ADD, Literals.L_1, REGISTER_X),
+					
+					// l
+					Utils.makeInstruction(	OPERATION_SET, Values.NEXT_WORD_LITERAL, 
+											REGISTER_X + Values.REGISTER_VALUE_OFFSET), 
+											Utils.makeVideoCell(0x6c, 0, 1, 0xa),
+					Utils.makeInstruction(OPERATION_ADD, Literals.L_1, REGISTER_X),
+					
+					// d
+					Utils.makeInstruction(	OPERATION_SET, Values.NEXT_WORD_LITERAL, 
+											REGISTER_X + Values.REGISTER_VALUE_OFFSET), 
+											Utils.makeVideoCell(0x64, 0, 1, 0xa),
+					Utils.makeInstruction(OPERATION_ADD, Literals.L_1, REGISTER_X),
+					
+					Utils.makeInstruction(OPERATION_SET, Values.NEXT_WORD_LITERAL, REGISTER_A), 0x3,
+					Utils.makeInstruction(OPERATION_SET, Literals.L_5, REGISTER_B),
+					Utils.makeSpecialInstruction(OPERATION_HWI, Literals.L_0),
+					
+					Utils.makeInstruction(OPERATION_SET, Literals.L_0, REGISTER_A),
+					Utils.makeInstruction(OPERATION_SET, Literals.L_16, REGISTER_B),
+					Utils.makeSpecialInstruction(OPERATION_HWI, Literals.L_0),
+					
+					
+					// check for key
+					Utils.makeInstruction(OPERATION_SET, Literals.L_1, REGISTER_A),
+					Utils.makeSpecialInstruction(OPERATION_HWI, Literals.L_1),
+					Utils.makeInstruction(OPERATION_IFE, REGISTER_C, Values.NEXT_WORD_LITERAL), 0x00,
+					Utils.makeInstruction(OPERATION_SUB, Literals.L_5, REGISTER_PC),
+					
+					// prepare new X value
+					Utils.makeInstruction(OPERATION_SET, Literals.L_1, REGISTER_Y),
+					Utils.makeInstruction(OPERATION_SHL, Literals.L_8, REGISTER_Y),
+					Utils.makeInstruction(OPERATION_BOR, REGISTER_Y, REGISTER_C),
+					
+					Utils.makeInstruction(OPERATION_SET, Literals.L_10, REGISTER_Y),
+					Utils.makeInstruction(OPERATION_SHL, Literals.L_12, REGISTER_Y),
+					Utils.makeInstruction(OPERATION_BOR, REGISTER_Y, REGISTER_C),
+					Utils.makeInstruction(	OPERATION_SET, REGISTER_C, 
+											REGISTER_X + Values.REGISTER_VALUE_OFFSET),
+					Utils.makeInstruction(OPERATION_ADD, Literals.L_1, REGISTER_X),
+					Utils.makeInstruction(OPERATION_SET, Literals.L_0, REGISTER_A),
+					Utils.makeSpecialInstruction(OPERATION_HWI, Literals.L_0),
+					
+					Utils.makeInstruction(OPERATION_SUB, Literals.L_16, REGISTER_PC)
+					
+				];
+				
+				var e = new Emulator();
+				e.async = true;
+				e.devices.push(new Monitor(e));
+				e.devices.push(new Keyboard(e));
+				e.run(program);
+
+			});
+		</script>
+	</head>
+	<body>
+		
+	</body>
+</html>

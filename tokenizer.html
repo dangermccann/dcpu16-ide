@@ -1,0 +1,25 @@
+<html>
+<body>
+
+<link type="text/css" href="stylesheets/styles.css" rel="stylesheet" />
+<script language="javascript" type="text/javascript" src="javascript/assembler.js"></script>
+
+<script language="javascript">
+function tokenize() {
+	var tokensDiv = document.getElementById("tokens");
+	var input = document.getElementById("input");
+	var result = Tokenizer.tokenize(input.value);
+	tokensDiv.innerHTML = Tokenizer.htmlFormatTokens(result);
+}
+</script>
+
+<div>
+<textarea id="input" style="width: 500px; height: 250px;"></textarea>
+<input type="button" value=Tokenize onclick="tokenize()" />
+</div>
+
+<div class="assembly" id="tokens"></div>
+
+
+</body>
+</html>
