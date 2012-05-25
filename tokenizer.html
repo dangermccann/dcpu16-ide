@@ -2,24 +2,45 @@
 <body>
 
 <link type="text/css" href="stylesheets/styles.css" rel="stylesheet" />
+<script language="javascript" type="text/javascript" src="javascript/emulator.js"></script>
 <script language="javascript" type="text/javascript" src="javascript/assembler.js"></script>
+<script language="javascript" type="text/javascript" src="javascript/lem1820.js"></script>
+<script language="javascript" type="text/javascript" src="javascript/keyboard.js"></script>
+<script language="javascript" type="text/javascript" src="javascript/clock.js"></script>
 
 <script language="javascript">
+var listing;
 function tokenize() {
 	var tokensDiv = document.getElementById("tokens");
 	var input = document.getElementById("input");
 	var result = Tokenizer.tokenize(input.value);
-	tokensDiv.innerHTML = Tokenizer.htmlFormatTokens(result);
+	listing = Assembler.compile(result);
+	tokensDiv.innerHTML = listing.htmlFormat();
+	document.getElementById("output").value = listing.bytecodeText();
+}
+
+function run() {
+	var e = new Emulator();
+	//e.async = true;
+	var m = new Monitor(e);
+	document.getElementById("monitor").appendChild(m.getDOMElement());
+	
+	e.devices.push(m);
+	e.devices.push(new Keyboard(e));
+	e.run(listing.bytecode());
 }
 </script>
 
 <div>
-<textarea id="input" style="width: 500px; height: 250px;"></textarea>
-<input type="button" value=Tokenize onclick="tokenize()" />
+<textarea id="input" style="height: 250px;"></textarea>
+<input type="button" value="Tokenize" onclick="tokenize()" />
 </div>
 
 <div class="assembly" id="tokens"></div>
 
+<textarea id="output" style="height: 100px;"></textarea>
+<input type="button" value="Run" onclick="run()" />
+<div id="monitor"></div>
 
 </body>
 </html>

@@ -1,13 +1,45 @@
 body { 
 	font-family: courier, 'courier new', 'fixed-width'; 
-	font-size: 12px;
+	font-size: 14px;
+	background: #444444;
 }
 .assembly {
 	background: #111111;
 	padding: 6px;
 	border: 1px dashed #cccccc;
 	overflow: hidden;
+	width: 637px; 
+	margin-bottom: 10px;
+	margin-top: 10px;
 }
+
+textarea {
+	font-size: 14px;
+	background: #111111;
+	padding: 6px;
+	border: 1px dashed #cccccc;
+	color: #ffffff;
+	width: 650px; 
+}
+
+.offset {
+	color: #ffffff;
+	float: left; 
+	width: 70px;
+}
+.bytecode {
+	color: #ffffff;
+	float: left; 
+	width: 170px;
+}
+.tokens {
+	float: left; 
+	width: 390px;
+}
+.clear {
+	clear: both;
+}
+
 .comment { 
 	color: #777777; 
 	white-space: nowrap;

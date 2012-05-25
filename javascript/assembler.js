@@ -106,9 +106,14 @@ Assembler =  {
 					command = token;
 					offset++;
 				}
-				else if(token.type == "reserved_word" && token.lexeme == "DAT") {
-					dat = token;
-					offset++;
+				else if(token.type == "reserved_word") {
+					if(token.lexeme == "DAT") {
+						if(dat != null || command != null) this.throwInvalid(i, token);
+						dat = token;
+					}
+					else {
+						if(command == null) this.throwInvalid(i, token);
+					}
 				}
 				else if(token.type == "register") {
 					if(command == null) this.throwInvalid(i, token);
@@ -157,7 +162,7 @@ Assembler =  {
 				}
 				else if(token.type == "label_def") {
 					if(command != null || dat !=  null) this.throwInvalid(i, token);
-					labels[token.lexeme] = offset;
+					labels[token.lexeme.substr(1)] = offset;
 				}
 				else if(token.type == "label_ref") {
 					if(command == null) this.throwInvalid(i, token);
@@ -171,7 +176,8 @@ Assembler =  {
 				throw "Mismatched brackets on line " + i;
 		}
 		
-		var output = [];
+		var output = new Listing();
+		offset = 0;
 		
 		// perform second pass to generate bytecode
 		for(var i = 0; i < tokenizedLines.length; i++) {
@@ -203,7 +209,7 @@ Assembler =  {
 					}
 					else {
 						// DAT value
-						output.push(parseInt(token.lexeme));
+						dat.push(parseInt(token.lexeme));
 					}
 				}
 				else if(token.type == "label_ref") {
@@ -221,16 +227,90 @@ Assembler =  {
 					params[paramIdx].memoryTarget = true;
 				}
 				else if(token.type == "string") {
+					// remove quotes 
+					var str = token.lexeme.substr(1, token.lexeme.length-2);
+					
 					// push each character onto the program array
-					for(var c = 0; c < token.lexeme.length; c++) {
-						output.push(parseInt(token.lexeme[c]));
+					for(var c = 0; c < str.length; c++) {
+						dat.push(parseInt(str.charCodeAt(c)));
 					}
 				}
+				else if(token.type == "reserved_word") {
+					if(token.lexeme != "DAT") {
+						params[paramIdx] = params[paramIdx] || new AssemblerParam();
+						params[paramIdx].operands.push(token);
+					}
+				}
+			}
+			
+			var bytes = [];
+			
+			if(opcode != 0) {
+				if(params.length == 0) throw "One or more parameters are required on line " + i;
+				if(params.length > 2) throw "Too many parameters on line " + i;
+				
+				
+				var param1 = this.makeParam(params[0], labels);
+				var param2 = (params.length > 1) ? this.makeParam(params[1], labels) : { };
+				
+				//additionalInstructions
+				
+				if(params.length == 1) 
+					bytes.push(Utils.makeSpecialInstruction(opcode, param1.value));
+				else {
+					bytes.push(Utils.makeInstruction(opcode, param2.value, param1.value));
+				}
+				
+				if(param2.nextWord != null)
+					bytes.push(param2.nextWord);
+				
+				if(param1.nextWord != null)
+					bytes.push(param1.nextWord);
 				
 			}
+			else {
+				for(var k = 0; k < dat.length; k++) {
+					bytes.push(dat[k]);
+				}
+			}
+			
+			output.addLine(offset, line, bytes);
+			offset += bytes.length;
 			
 		}
 		
+		return output;
+		
+	},
+	
+	makeParam: function(param, labels) {
+		var val = 0, nextWord = null, additionalInstructions = [];
+		
+		if(param.operands.length > 1) {
+			// make expression
+		}
+		else {
+			var token = param.operands[0];
+			if(token.type == "register") 
+				val = eval("REGISTER_" + token.lexeme) + (param.memoryTarget ? Values.REGISTER_VALUE_OFFSET : 0);
+			else if(token.type == "decimal" || token.type == "hexidecimal") {
+				val = param.memoryTarget ? Values.NEXT_WORD_VALUE : Values.NEXT_WORD_LITERAL;
+				nextWord = parseInt(token.lexeme);
+			}
+			else if(token.type == "label_ref") {
+				val = param.memoryTarget ? Values.NEXT_WORD_VALUE : Values.NEXT_WORD_LITERAL;
+				nextWord = labels[token.lexeme];
+			}
+			else if(token.type == "reserved_word") {
+				if(token.lexeme == "POP")
+					val = Values.SP_OFFSET;
+				else if(token.lexeme == "PUSH")
+					val = Values.SP_OFFSET;
+				else if(token.lexeme == "PEAK")
+					val = Values.SP_OFFSET + 1;
+			}
+		}
+		return { "value": val, "nextWord": nextWord, "additionalInstructions": additionalInstructions };
 	},
 	
 	throwInvalid: function(line, token) {
@@ -243,3 +323,57 @@ function AssemblerParam() {
 	this.operators = [];
 	this.memoryTarget = false;	// whether the paramater references a RAM location
 }
+
+function Listing() {
+	this.lines = [];
+
+	this.addLine = function(offset, tokens, bytecode) {
+		this.lines.push({ "offset": offset, "tokens": tokens, "bytecode": bytecode });
+	}
+	
+	this.bytecode = function() {
+		var output = [];
+		for(var i = 0; i < this.lines.length; i++) {
+			for(var j = 0; j < this.lines[i].bytecode.length; j++) {
+				output.push(this.lines[i].bytecode[j]);
+			}
+		}
+		return output;
+	}
+	
+	this.htmlFormat = function() {
+		var html = "";
+		
+		for(var i = 0; i < this.lines.length; i++) {
+			var line = this.lines[i];
+			html += "<div class='offset'>" + Utils.hex2(line.offset) + "</div>";
+			
+			html += "<div class='bytecode'>";
+			for(var j = 0; j < line.bytecode.length; j++) {
+				html += Utils.hex2(line.bytecode[j]) + " ";
+			}
+			html += "</div>";
+			
+			html += "<div class='tokens'>";
+			for(var j = 0; j < line.tokens.length; j++) {
+				html += Tokenizer.htmlFormatToken(line.tokens[j]);
+			}
+			html += "</div>";
+			
+			html += "<div class='clear'></div>";
+		}
+		
+		return html;
+	}
+	
+	this.bytecodeText = function() {	
+		var bytecode = this.bytecode();
+		var output = "";
+		for(var i = 0; i < bytecode.length; i++) {
+			output += Utils.hex2(bytecode[i]) + " ";
+		}
+		return output;
+	}
+}
+
+

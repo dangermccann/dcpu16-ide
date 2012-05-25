@@ -15,7 +15,7 @@
 
 				var program = [
 					
-					Utils.makeInstruction(OPERATION_SET, Literals.L_16, REGISTER_X),
+					Utils.makeInstruction(OPERATION_SET, Values.NEXT_WORD_LITERAL, REGISTER_X), 0x0200,
 					
 					// clear background
 					Utils.makeInstruction(	OPERATION_SET, Values.NEXT_WORD_LITERAL, 
@@ -26,7 +26,7 @@
 					Utils.makeInstruction(OPERATION_SUB, Literals.L_6, REGISTER_PC),
 					
 					
-					Utils.makeInstruction(OPERATION_SET, Literals.L_16, REGISTER_X),
+					Utils.makeInstruction(OPERATION_SET, Values.NEXT_WORD_LITERAL, REGISTER_X), 0x0200,
 					
 					// h
 					Utils.makeInstruction(	OPERATION_SET, Values.NEXT_WORD_LITERAL, 
@@ -99,7 +99,7 @@
 					Utils.makeSpecialInstruction(OPERATION_HWI, Literals.L_0),
 					
 					Utils.makeInstruction(OPERATION_SET, Literals.L_0, REGISTER_A),
-					Utils.makeInstruction(OPERATION_SET, Literals.L_16, REGISTER_B),
+					Utils.makeInstruction(OPERATION_SET, Values.NEXT_WORD_LITERAL, REGISTER_B), 0x200,
 					Utils.makeSpecialInstruction(OPERATION_HWI, Literals.L_0),
 					
 					

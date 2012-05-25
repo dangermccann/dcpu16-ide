@@ -201,6 +201,11 @@ Utils = {
 		return "0x" + num.toString(16);
 	},
 	
+	hex2: function(num) {
+		var str = num.toString(16);
+		return "0x" + "0000".substr(str.length) + str;
+	},
+	
 	makeVideoCell: function(glyph, blink, bg, fg) {
 		var result = glyph & 0x7f;
 		result |= (blink & 0x1) << 7;
@@ -390,7 +395,7 @@ function Emulator() {
 			b.set(bVal & aVal);
 		}),
 		
-		BOR: new Op(this, "BND", OPERATION_BOR, 1, function(a, b) { 
+		BOR: new Op(this, "BOR", OPERATION_BOR, 1, function(a, b) { 
 			var aVal = a.get(), bVal = b.get();
 			b.set(bVal | aVal);
 		}),
@@ -574,6 +579,11 @@ function Emulator() {
 		this.program = _program;
 		
 		console.log("Running program (" + this.program.length + " words)" );
+		
+		// load program into RAM
+		for(var i = 0; i < this.program.length; i++) {
+			this.RAM[i] = this.program[i];
+		}
 		
 		if(!this.async) {
 			while(this.step()) { }
