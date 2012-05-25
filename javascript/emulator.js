@@ -226,6 +226,7 @@ Utils = {
 function Emulator() { 
 
 	this.async = false;
+	this.verbose = false;
 
 	this.CPU_CYCLE = 0;
 	this.RAM = [];
@@ -644,14 +645,15 @@ function Emulator() {
 			throw err;
 		}
 		
-//		console.log(
-//			Utils.hex(this.Registers.PC.get()) + "\t" + 
-//			op.name + "\t(" + 
-//			Utils.hex(instruction.a) + ",\t" + 
-//			Utils.hex(instruction.b) + ")"
-//		);
-		op.exec(instruction.a, instruction.b);
-		
+		if(this.verbose) {
+			console.log(
+				Utils.hex(this.Registers.PC.get()) + "\t" + 
+				op.name + "\t(" + 
+				Utils.hex(instruction.a) + ",\t" + 
+				Utils.hex(instruction.b) + ")"
+			);
+			op.exec(instruction.a, instruction.b);
+		}
 	};
 	
 	this.nextWord = function() {

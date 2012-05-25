@@ -82,7 +82,122 @@ Tokenizer = {
 	}
 }
 
+function AssemblerArgument() {
+	this.expressionValue = null;
+	this.expressionRegister = null;
+	this.memoryTarget = false;
+	this.value = null;
+	this.nextWord = null;
+	this.tokenCount = 0;
+}
+
 Assembler =  {
+	compileArgument: function(tokens, start, lineNumber, labels) {
+		var argument = new AssemblerArgument();
+		var k;
+		var openBracketCount = 0, closeBracketCount = 0;
+		var lastOperator = null;
+		for(k = start; k < tokens.length; k++) {
+			var token = tokens[k];
+			
+			if(token.type == "space") { }
+			else if(token.type == "comma" || token.type == "comment") { 
+				break;
+			}
+			else if(token.type == "decimal" || token.type == "hexidecimal" || token.type == "label_ref") {
+				if(argument.expressionRegister != null && argument.expressionValue != null) this.throwInvalid(lineNumber, token);
+				
+				var val;
+				if(token.type == "label_ref") {
+					if(labels != null) {
+						val = labels[token.lexeme];
+						
+						if(val == null) this.throwInvalid(lineNumber, token);
+					}
+					else val = 0x100; // placeholder -- TODO: what if this gets reduced to a literal next time through?
+				}
+				else val = parseInt(token.lexeme);
+				
+				if(lastOperator != null && argument.expressionValue != null) {
+					argument.expressionValue = eval(""+argument.expressionValue + lastOperator + val);
+					lastOperator = null;
+				}
+				else argument.expressionValue = val;
+				
+				if(argument.memoryTarget) {
+					if(argument.expressionRegister != null) {
+						if(lastOperator != "+") this.throwInvalid(lineNumber, token);
+						
+						argument.value = eval("REGISTER_" + argument.expressionRegister) + Values.REGISTER_NEXT_WORD_OFFSET;
+						argument.nextWord = argument.expressionValue;
+						lastOperator = null;
+					}
+					else {
+						argument.value  = Values.NEXT_WORD_VALUE;
+						argument.nextWord = argument.expressionValue;
+					}
+				}
+				else {
+					// literal
+					if(argument.expressionValue >= -1 && argument.expressionValue <= 30 && token.type != "label_ref") {
+						argument.value = Literals["L_"+argument.expressionValue];
+						argument.nextWord = null;
+					}
+					else {
+						argument.value = Values.NEXT_WORD_LITERAL;
+						argument.nextWord = argument.expressionValue;
+					}
+				}
+			}
+			else if(token.type == "register") {
+				if(argument.expressionValue == null) {
+					argument.value = eval("REGISTER_" + token.lexeme) + (argument.memoryTarget ? Values.REGISTER_VALUE_OFFSET : 0);
+					argument.expressionRegister = token.lexeme;
+				}
+				else {
+					if(!argument.memoryTarget) this.throwInvalid(lineNumber, token);
+					if(argument.expressionRegister) this.throwInvalid(lineNumber, token);
+					if(lastOperator != "+") this.throwInvalid(lineNumber, token);
+					
+					argument.value = eval("REGISTER_" + token.lexeme) + Values.REGISTER_NEXT_WORD_OFFSET;
+					argument.nextWord = argument.expressionValue;
+					argument.expressionRegister = token.lexeme;
+					lastOperator = null;
+				}
+			}
+			else if(token.type == "reserved_word" && token.lexeme != "DAT") {
+				if(argument.expressionValue != null || lastOperator != null) this.throwInvalid(lineNumber, token);
+				
+				if(token.lexeme == "POP")
+					argument.value = Values.SP_OFFSET;
+				else if(token.lexeme == "PUSH")
+					argument.value = Values.SP_OFFSET;
+				else if(token.lexeme == "PEAK")
+					argument.value = Values.SP_OFFSET + 1;
+			}
+			else if(token.type == "open_bracket") {
+				argument.memoryTarget = true;
+				openBracketCount++;
+			}
+			else if(token.type == "close_bracket") {
+				if(lastOperator != null) this.throwInvalid(lineNumber, token);
+				closeBracketCount++;
+			}
+			else if(token.type == "operator") {
+				if(lastOperator != null) this.throwInvalid(lineNumber, token);
+				lastOperator = token.lexeme;
+			}
+			else {
+				this.throwInvalid(lineNumber, token);
+			}
+		}
+		
+		if(openBracketCount != closeBracketCount) throw "Mismatched brackets on line " + lineNumber;
+		
+		argument.tokenCount = k - start;
+		return argument;
+	},
+	
 	compile: function(tokenizedLines) {
 		
 		// perform a first pass to estimate the offset associated with each label
@@ -94,86 +209,48 @@ Assembler =  {
 			
 			var command = null;
 			var dat = null;
-			var bracket = null;
-			var operators = 0;
-			var params = 0;
-			var openBracketCount = 0, closeBracketCount = 0;
 			
 			for(var j = 0; j < line.length; j++) {
 				var token = line[j];
 				
-				if(token.type == "command") {
-					command = token;
-					offset++;
-				}
-				else if(token.type == "reserved_word") {
-					if(token.lexeme == "DAT") {
-						if(dat != null || command != null) this.throwInvalid(i, token);
+				// handle initial operation
+				if(command == null && dat == null) {
+					if(token.type == "space" || token.type == "comment") { }
+					else if(token.type == "command") {
+						command = token;
+						offset++;
+					}
+					else if(token.type == "label_def") {
+						labels[token.lexeme.substr(1)] = offset;
+					}
+					else if(token.type == "reserved_word" && token.lexeme == "DAT") {
 						dat = token;
 					}
 					else {
-						if(command == null) this.throwInvalid(i, token);
+						this.throwInvalid(i, token);
 					}
 				}
-				else if(token.type == "register") {
-					if(command == null) this.throwInvalid(i, token);
-				}
-				else if(token.type == "operator") {
-					if(command == null) this.throwInvalid(i, token);
-					
-					// if this is the first operator, increment offset by 2, otherwise by 1
-					offset++;
-					if(operators == 0)
-						offset++;
-					operators++;
-				}
-				else if(token.type == "comma") {
-					if(command == null && dat == null) this.throwInvalid(i, token);
-					
-					// make sure there are no more than two parameters passed to a command
+				// handle arguments
+				else {
 					if(command != null) {
-						if(params > 1) this.throwInvalid(i, token);
-					
-						params++;
-						operators = 0;
+						var arg = this.compileArgument(line, j, i+1, null);
+						if(arg.nextWord) 
+							offset++;
+							j += arg.tokenCount;
 					}
-				}
-				else if(token.type == "decimal" || token.type == "hexidecimal") {
-					if(command == null && dat == null) this.throwInvalid(i, token);
-					
-					// increase offset because we'll use "next word literal" for command
-					// parameters, and each DAT element takes up one word
-					offset++;
-					
-					// TODO: support literals for small values
-				}
-				else if(token.type == "open_bracket" || token.type == "close_bracket") {
-					if(command == null) this.throwInvalid(i, token);
-					
-					if(token.type == "open_bracket")
-						openBracketCount++;
-					else
-						closeBracketCount++;
-						
-				}
-				else if(token.type == "string") {
-					if(dat == null) this.throwInvalid(i, token);
-					offset += token.lexeme.length;
-				}
-				else if(token.type == "label_def") {
-					if(command != null || dat !=  null) this.throwInvalid(i, token);
-					labels[token.lexeme.substr(1)] = offset;
-				}
-				else if(token.type == "label_ref") {
-					if(command == null) this.throwInvalid(i, token);
-					
-					// increase offset because labels use "next word literal"
-					offset++;
+					else if(dat != null) {
+						// data blocks
+						if(token.type == "decimal" || token.type == "hexidecimal") {
+							offset++;
+						}
+						else if(token.type == "string") {
+							// remove quotes
+							var str = token.lexeme.substr(1, token.lexeme.length-2);
+							offset += str.length;
+						}
+					}
 				}
 			}
-			
-			if(openBracketCount != closeBracketCount) 
-				throw "Mismatched brackets on line " + i;
 		}
 		
 		var output = new Listing();
@@ -183,62 +260,50 @@ Assembler =  {
 		for(var i = 0; i < tokenizedLines.length; i++) {
 			var line = tokenizedLines[i];
 			var opcode = 0;
-			var paramIdx = 0;
-			var params = [];
-			var dat = [];
+			var command = null;
+			var arguments = [];
+			var dat = null;
 			
 			for(var j = 0; j < line.length; j++) {
 				var token = line[j];
 				
-				if(token.type == "command") {
-					opcode = eval("OPERATION_"+token.lexeme);
-					if(opcode === 0) this.throwInvalid(i, token);
-				}
-				else if(token.type == "comma") {
-					if(opcode !== 0)
-						paramIdx++;
-				}
-				else if(token.type == "register") {
-					params[paramIdx] = params[paramIdx] || new AssemblerParam();
-					params[paramIdx].operands.push(token);
-				}
-				else if(token.type == "decimal" || token.type == "hexidecimal") {
-					if(opcode !== 0) {
-						params[paramIdx] = params[paramIdx] || new AssemblerParam();
-						params[paramIdx].operands.push(token);
+				// handle initial operation
+				if(command == null && dat == null) {
+					if(token.type == "space" || token.type == "comment") { }
+					else if(token.type == "command") {
+						command = token;
+						opcode = eval("OPERATION_"+token.lexeme);
+					}
+					else if(token.type == "label_def") { }
+					else if(token.type == "reserved_word" && token.lexeme == "DAT") {
+						dat = [];
 					}
 					else {
-						// DAT value
-						dat.push(parseInt(token.lexeme));
+						this.throwInvalid(i, token);
 					}
 				}
-				else if(token.type == "label_ref") {
-					if(!labels[token.lexeme]) throw "Invalid label " + token.lexeme + " on line " + i;
-				
-					params[paramIdx] = params[paramIdx] || new AssemblerParam();
-					params[paramIdx].operands.push(token);
-				}
-				else if(token.type == "operator") {
-					params[paramIdx] = params[paramIdx] || new AssemblerParam();
-					params[paramIdx].operators.push(token);
-				}
-				else if(token.type == "open_bracket") {
-					params[paramIdx] = params[paramIdx] || new AssemblerParam();
-					params[paramIdx].memoryTarget = true;
-				}
-				else if(token.type == "string") {
-					// remove quotes 
-					var str = token.lexeme.substr(1, token.lexeme.length-2);
-					
-					// push each character onto the program array
-					for(var c = 0; c < str.length; c++) {
-						dat.push(parseInt(str.charCodeAt(c)));
+				// handle arguments
+				else {
+					if(command != null) {
+						var arg = this.compileArgument(line, j, i+1, labels);
+						if(arg.value != null)
+							arguments.push(arg);
+						j += arg.tokenCount;
 					}
-				}
-				else if(token.type == "reserved_word") {
-					if(token.lexeme != "DAT") {
-						params[paramIdx] = params[paramIdx] || new AssemblerParam();
-						params[paramIdx].operands.push(token);
+					else if(dat != null) {
+						// data blocks
+						if(token.type == "decimal" || token.type == "hexidecimal") {
+							dat.push(parseInt(token.lexeme));
+						}
+						else if(token.type == "string") {
+							// remove quotes 
+							var str = token.lexeme.substr(1, token.lexeme.length-2);
+
+							// push each character onto the program array
+							for(var c = 0; c < str.length; c++) {
+								dat.push(parseInt(str.charCodeAt(c)));
+							}
+						}
 					}
 				}
 			}
@@ -246,16 +311,16 @@ Assembler =  {
 			var bytes = [];
 			
 			if(opcode != 0) {
-				if(params.length == 0) throw "One or more parameters are required on line " + i;
-				if(params.length > 2) throw "Too many parameters on line " + i;
+				if(arguments.length == 0) throw "One or more parameters are required on line " + i;
+				if(arguments.length > 2) throw "Too many arguments on line " + i;
 				
 				
-				var param1 = this.makeParam(params[0], labels);
-				var param2 = (params.length > 1) ? this.makeParam(params[1], labels) : { };
+				var param1 = arguments[0];
+				var param2 = (arguments.length > 1) ? arguments[1] : { };
 				
 				//additionalInstructions
 				
-				if(params.length == 1) 
+				if(arguments.length == 1) 
 					bytes.push(Utils.makeSpecialInstruction(opcode, param1.value));
 				else {
 					bytes.push(Utils.makeInstruction(opcode, param2.value, param1.value));
@@ -268,7 +333,7 @@ Assembler =  {
 					bytes.push(param1.nextWord);
 				
 			}
-			else {
+			else if(dat != null) {
 				for(var k = 0; k < dat.length; k++) {
 					bytes.push(dat[k]);
 				}
@@ -283,45 +348,9 @@ Assembler =  {
 		
 	},
 	
-	makeParam: function(param, labels) {
-		var val = 0, nextWord = null, additionalInstructions = [];
-		
-		if(param.operands.length > 1) {
-			// make expression
-		}
-		else {
-			var token = param.operands[0];
-			if(token.type == "register") 
-				val = eval("REGISTER_" + token.lexeme) + (param.memoryTarget ? Values.REGISTER_VALUE_OFFSET : 0);
-			else if(token.type == "decimal" || token.type == "hexidecimal") {
-				val = param.memoryTarget ? Values.NEXT_WORD_VALUE : Values.NEXT_WORD_LITERAL;
-				nextWord = parseInt(token.lexeme);
-			}
-			else if(token.type == "label_ref") {
-				val = param.memoryTarget ? Values.NEXT_WORD_VALUE : Values.NEXT_WORD_LITERAL;
-				nextWord = labels[token.lexeme];
-			}
-			else if(token.type == "reserved_word") {
-				if(token.lexeme == "POP")
-					val = Values.SP_OFFSET;
-				else if(token.lexeme == "PUSH")
-					val = Values.SP_OFFSET;
-				else if(token.lexeme == "PEAK")
-					val = Values.SP_OFFSET + 1;
-			}
-		}
-		return { "value": val, "nextWord": nextWord, "additionalInstructions": additionalInstructions };
-	},
-	
 	throwInvalid: function(line, token) {
-		throw "Invalid synxax on line " + i + " near " + token.lexeme;
+		throw "Invalid synxax on line " + line + " near " + token.lexeme;
 	}
-}
-
-function AssemblerParam() {
-	this.operands = [];
-	this.operators = [];
-	this.memoryTarget = false;	// whether the paramater references a RAM location
 }
 
 function Listing() {
