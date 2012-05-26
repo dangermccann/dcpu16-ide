@@ -8,15 +8,15 @@ function Register(_name, _value, _emulator) {
 	this.emulator = _emulator;
 	this.contents = 0;
 }
-Register.prototype.get = function() { return this.contents; }
+Register.prototype.getA = Register.prototype.getB = Register.prototype.get = function() { return this.contents; }
 Register.prototype.set = function(val) { this.contents = val; }
 
 function RegisterValue(_register) {
 	this.register = _register;
 	this.emulator = _register.emulator;
 }
-RegisterValue.prototype.get = function() { 
-	return this.emulator.RAM[this.register.get()]; 
+RegisterValue.prototype.getA = RegisterValue.prototype.getB = RegisterValue.prototype.get = function() { 
+	return this.emulator.RAM[this.register.get()] || 0; 
 }
 RegisterValue.prototype.set = function(val) { 
 	this.emulator.RAM[this.register.get()] = val; 
@@ -25,19 +25,25 @@ RegisterValue.prototype.set = function(val) {
 function RegisterPlusNextWord(_register) {
 	this.register = _register;
 	this.emulator = _register.emulator;
+	this.cachedResult = null;
 }
-RegisterPlusNextWord.prototype.get = function() { 
-	return this.emulator.RAM[this.register.get() + this.emulator.nextWord()]; 
+RegisterPlusNextWord.prototype.getB = RegisterPlusNextWord.prototype.getA = RegisterPlusNextWord.prototype.get = function() { 
+	this.cachedResult = this.register.get() + this.emulator.nextWord();
+	return this.emulator.RAM[this.cachedResult] || 0; 
 }
 RegisterPlusNextWord.prototype.set = function(val) { 
-	this.emulator.RAM[this.register.get() + this.emulator.nextWord()] = val; 
+	this.emulator.RAM[this.cachedResult] = val; 
 }
 
 
 function StackPointerValue(_emulator) { 
 	this.emulator = _emulator
 }
-StackPointerValue.prototype.get =  function() {
+StackPointerValue.prototype.get = StackPointerValue.prototype.getB = function() {
+	return this.emulator.Registers.SP.get();
+}
+
+StackPointerValue.prototype.getA =  function() {
 	return this.emulator.Registers.SP.pop();
 }
 StackPointerValue.prototype.set = function(val) {
@@ -47,7 +53,7 @@ StackPointerValue.prototype.set = function(val) {
 function Literal(_value) {
 	this.value = _value;
 }
-Literal.prototype.get = function() { return this.value; }
+Literal.prototype.getA = Literal.prototype.getB = Literal.prototype.get = function() { return this.value; }
 Literal.prototype.set = function(val) {  }
 Literals = { };
 
@@ -61,8 +67,8 @@ function Op(_emulator, _name, _value, _cycles, __exec, _set) {
 	_set[this.value] = this;
 }
 Op.prototype.exec = function(a, b) { 
-	var valA = this.emulator.Values[new String(a)];
-	var valB = this.emulator.Values[new String(b)];
+	var valA = this.emulator.getParamValue(a);
+	var valB = this.emulator.getParamValue(b);
 	
 	if(!valA) throw new Error("Invalid 'a' value " + a);
 	if(!valB) throw new Error("Invalid 'b' value " + b);
@@ -257,10 +263,13 @@ function Emulator() {
 	this.PC = this.Registers.PC;
 
 	this.Registers.SP.push = function(val) {
-		this.emulator.RAM[--this.contents] = val;
+		this.contents =  Utils.to16BitSigned(this.contents - 1);
+		//this.contents =  this.contents - 1;
+		this.emulator.RAM[this.contents] = val;
 	};
 	this.Registers.SP.pop = function() {
-		return this.emulator.RAM[this.contents++];
+		if(this.contents == 0) throw "Stack underflow";
+		return this.emulator.RAM[this.contents++] || 0;
 	};
 
 	
@@ -297,11 +306,20 @@ function Emulator() {
 	this.Values[0x1d] = this.Registers.EX;
 	this.Values[0x1e] = { // next word value
 		emulator: this,
-		get: function() { return this.emulator.RAM[this.emulator.nextWord()]; },
-		set: function(val) { this.emulator.RAM[this.emulator.nextWord()] = val; }
+		getA: function() { return this.get(); },
+		getB: function() { return this.get(); },
+		get: function() { 
+			this.cachedResult = this.emulator.nextWord();
+			return this.emulator.RAM[this.cachedResult] || 0; 
+		},
+		set: function(val) { 
+			this.emulator.RAM[this.cachedResult] = val; 
+		}
 	};	
 	this.Values[0x1f] = { // next word literal	
 		emulator: this,
+		getA: function() { return this.get(); },
+		getB: function() { return this.get(); },
 		get: function() { return this.emulator.nextWord(); },
 		set: function(val) { }
 	};
@@ -313,11 +331,17 @@ function Emulator() {
 
 	this.BasicOperations = {
 		SET: new Op(this, "SET", OPERATION_SET, 1, function(a, b) { 
-			b.set(a.get());
+			var aVal = a.getA(), bVal = b.getB();
+			b.set(aVal);
+			
+			if(a == this.emulator.Registers.PC && b == this.emulator.Registers.PC) {
+				// setting PC to itself terminates the application
+				this.emulator.Registers.PC.contents = Number.MAX_VALUE;
+			}
 		}),
 		
 		ADD: new Op(this, "ADD", OPERATION_ADD, 2, function(a, b) { 
-			var res = a.get() + b.get();
+			var res = a.getA() + b.getB();
 			b.set(res & 0xffff);
 			if((res & 0xffff0000) > 0)
 				this.emulator.Registers.EX.set(0x0001);
@@ -326,8 +350,8 @@ function Emulator() {
 		}),
 		
 		SUB: new Op(this, "SUB", OPERATION_SUB, 2, function(a, b) { 
-			var aVal = a.get();
-			var res = b.get() - aVal;
+			var aVal = a.getA();
+			var res = b.getB() - aVal;
 			b.set(res & 0xffff);
 			if((res) < 0)
 				this.emulator.Registers.EX.set(0xffff);
@@ -337,20 +361,20 @@ function Emulator() {
 		}),
 		
 		MUL: new Op(this, "MUL", OPERATION_MUL, 2, function(a, b) { 
-			var res = a.get() * b.get();
+			var res = a.getA() * b.getB();
 			b.set(res & 0xffff);
 			this.emulator.Registers.EX.set((res >> 16) & 0xffff);
 		}),
 		
 		MLI: new Op(this, "MLI", OPERATION_MLI, 2, function(a, b) { 
-			var aVal = Utils.to32BitSigned(a.get()), bVal = Utils.to32BitSigned(b.get());
+			var aVal = Utils.to32BitSigned(a.getA()), bVal = Utils.to32BitSigned(b.getB());
 			var res = bVal * aVal;
 			b.set(Utils.to16BitSigned(res));
 			this.emulator.Registers.EX.set((res >> 16) & 0xffff);
 		}),
 		
 		DIV: new Op(this, "DIV", OPERATION_DIV, 3, function(a, b) { 
-			var aVal = a.get(), bVal = b.get();
+			var aVal = a.getA(), bVal = b.getB();
 			if(aVal === 0) {
 				b.set(0);
 				this.emulator.Registers.EX.set(0);
@@ -363,7 +387,7 @@ function Emulator() {
 		}),
 		
 		DVI: new Op(this, "DVI", OPERATION_DVI, 3, function(a, b) { 
-			var aVal = Utils.to32BitSigned(a.get()), bVal = Utils.to32BitSigned(b.get());
+			var aVal = Utils.to32BitSigned(a.getA()), bVal = Utils.to32BitSigned(b.getB());
 			if(aVal === 0) {
 				b.set(0);
 				this.emulator.Registers.EX.set(0);
@@ -376,7 +400,7 @@ function Emulator() {
 		}),
 		
 		MOD: new Op(this, "MOD", OPERATION_MOD, 3, function(a, b) { 
-			var aVal = a.get(), bVal = b.get();
+			var aVal = a.getA(), bVal = b.getB();
 			if(aVal === 0)
 				b.set(0);
 			else 
@@ -384,7 +408,7 @@ function Emulator() {
 		}),
 		
 		MDI: new Op(this, "MDI", OPERATION_MDI, 3, function(a, b) { 
-			var aVal = Utils.to32BitSigned(a.get()), bVal = Utils.to32BitSigned(b.get());
+			var aVal = Utils.to32BitSigned(a.getA()), bVal = Utils.to32BitSigned(b.getB());
 			if(aVal === 0)
 				b.set(0);
 			else 
@@ -392,104 +416,104 @@ function Emulator() {
 		}),
 		
 		AND: new Op(this, "AND", OPERATION_AND, 1, function(a, b) { 
-			var aVal = a.get(), bVal = b.get();
+			var aVal = a.getA(), bVal = b.getB();
 			b.set(bVal & aVal);
 		}),
 		
 		BOR: new Op(this, "BOR", OPERATION_BOR, 1, function(a, b) { 
-			var aVal = a.get(), bVal = b.get();
+			var aVal = a.getA(), bVal = b.getB();
 			b.set(bVal | aVal);
 		}),
 		
 		XOR: new Op(this, "XOR", OPERATION_XOR, 1, function(a, b) { 
-			var aVal = a.get(), bVal = b.get();
+			var aVal = a.getA(), bVal = b.getB();
 			b.set(bVal ^ aVal);
 		}),
 		
 		SHR: new Op(this, "SHR", OPERATION_SHR, 1, function(a, b) { 
-			var aVal = a.get(), bVal = b.get();
+			var aVal = a.getA(), bVal = b.getB();
 			b.set(bVal >>> aVal);
 			this.emulator.Registers.EX.set(((bVal << 16 ) >> aVal) & 0xffff);
 		}),
 		
 		ASR: new Op(this, "ASR", OPERATION_ASR, 1, function(a, b) { 
-			var aVal = a.get(), bVal = Utils.to32BitSigned(b.get());
+			var aVal = a.getA(), bVal = Utils.to32BitSigned(b.getB());
 			b.set((bVal >> aVal) & 0xffff);
 			this.emulator.Registers.EX.set(((bVal << 16) >>> aVal) & 0xffff);
 		}),
 		
 		SHL: new Op(this, "SHL", OPERATION_SHL, 1, function(a, b) { 
-			var aVal = a.get(), bVal = b.get();
+			var aVal = a.getA(), bVal = b.getB();
 			b.set((bVal << aVal) & 0xffff);
 			this.emulator.Registers.EX.set(((bVal << aVal) >> 16) & 0xffff);
 		}),
 		
 		IFB: new Op(this, "IFB", OPERATION_IFB, 2, function(a, b) { 
-			var aVal = a.get(), bVal = b.get();
+			var aVal = a.getA(), bVal = b.getB();
 			if((bVal & aVal) != 0) { }
-			else this.emulator.skipInstruction();
+			else this.emulator.skipInstruction(true);
 			
 		}),
 		
 		IFC: new Op(this, "IFC", OPERATION_IFC, 2, function(a, b) { 
-			var aVal = a.get(), bVal = b.get();
+			var aVal = a.getA(), bVal = b.getB();
 			if((bVal & aVal) === 0) { }
-			else this.emulator.skipInstruction();
+			else this.emulator.skipInstruction(true);
 			
 		}),
 		
 		IFE: new Op(this, "IFE", OPERATION_IFE, 2, function(a, b) { 
-			var aVal = a.get(), bVal = b.get();
+			var aVal = a.getA(), bVal = b.getB();
 			if(bVal === aVal) { }
-			else this.emulator.skipInstruction();
+			else this.emulator.skipInstruction(true);
 		}),
 		
 		IFN: new Op(this, "IFN", OPERATION_IFN, 2, function(a, b) { 
-			var aVal = a.get(), bVal = b.get();
+			var aVal = a.getA(), bVal = b.getB();
 			if(bVal !== aVal) { }
-			else this.emulator.skipInstruction();
+			else this.emulator.skipInstruction(true);
 		}),
 		
 		IFG: new Op(this, "IFG", OPERATION_IFG, 2, function(a, b) { 
-			var aVal = a.get(), bVal = b.get();
+			var aVal = a.getA(), bVal = b.getB();
 			if(bVal > aVal) { }
-			else this.emulator.skipInstruction();
+			else this.emulator.skipInstruction(true);
 		}),
 		
 		IFA: new Op(this, "IFA", OPERATION_IFA, 2, function(a, b) { 
-			var aVal = Utils.to32BitSigned(a.get()), bVal = Utils.to32BitSigned(b.get());
+			var aVal = Utils.to32BitSigned(a.getA()), bVal = Utils.to32BitSigned(b.getB());
 			if(bVal > aVal) { }
-			else this.emulator.skipInstruction();
+			else this.emulator.skipInstruction(true);
 		}),
 		
 		IFL: new Op(this, "IFL", OPERATION_IFL, 2, function(a, b) { 
-			var aVal = a.get(), bVal = b.get();
+			var aVal = a.getA(), bVal = b.getB();
 			if(bVal < aVal) { }
-			else this.emulator.skipInstruction();
+			else this.emulator.skipInstruction(true);
 		}),
 		
 		IFU: new Op(this, "IFU", OPERATION_IFU, 2, function(a, b) { 
-			var aVal = Utils.to32BitSigned(a.get()), bVal = Utils.to32BitSigned(b.get());
+			var aVal = Utils.to32BitSigned(a.getA()), bVal = Utils.to32BitSigned(b.getB());
 			if(bVal < aVal) { }
-			else this.emulator.skipInstruction();
+			else this.emulator.skipInstruction(true);
 		}),
 		
 		
 		ADX: new Op(this, "ADX", OPERATION_ADX, 3, function(a, b) { 
-			var res = a.get() + b.get() + this.emulator.Registers.EX.get();
+			var res = a.getA() + b.getB() + this.emulator.Registers.EX.get();
 			b.set(res & 0xffff);
 			this.emulator.Registers.EX.set(res > 0xffff ? 1 : 0);
 		}),
 		
 		SBX: new Op(this, "SBX", OPERATION_SBX, 3, function(a, b) { 
-			var aVal = a.get(), bVal = b.get();
+			var aVal = a.getA(), bVal = b.getB();
 			var res = bVal - aVal + this.emulator.Registers.EX.get();
 			b.set(res & 0xffff);
 			this.emulator.Registers.EX.set(res < 0 ? 0xffff : 0);
 		}),
 		
 		STI: new Op(this, "STI", OPERATION_STI, 2, function(a, b) { 
-			var aVal = a.get(), bVal = b.get();
+			var aVal = a.getA(), bVal = b.getB();
 			b.set(aVal);
 			a.set(bVal);
 			this.emulator.Registers.I.set((this.emulator.Registers.I.get() + 1) &  0xffff);
@@ -497,7 +521,7 @@ function Emulator() {
 		}),
 		
 		STD: new Op(this, "STD", OPERATION_STD, 2, function(a, b) { 
-			var aVal = a.get(), bVal = b.get();
+			var aVal = a.getA(), bVal = b.getB();
 			b.set(aVal);
 			a.set(bVal);
 			this.emulator.Registers.I.set((this.emulator.Registers.I.get() - 1) &  0xffff);
@@ -505,13 +529,13 @@ function Emulator() {
 		}),
 		
 		JSR: new Op(this, "JSR", OPERATION_JSR, 3, function(a) { 
-			var aVal = a.get();
+			var aVal = a.getA();
 			this.emulator.Registers.SP.push(this.emulator.Registers.PC.get());
 			this.emulator.Registers.PC.set(aVal);
 		}, this.SpecialOpSet),
 		
 		INT: new Op(this, "INT", OPERATION_INT, 4, function(a) { 
-			var aVal = a.get();
+			var aVal = a.getA();
 			this.emulator.interruptQueue.push(aVal);
 		}, this.SpecialOpSet),
 		
@@ -520,7 +544,7 @@ function Emulator() {
 		}, this.SpecialOpSet),
 		
 		IAS: new Op(this, "IAS", OPERATION_IAS, 1, function(a) { 
-			this.emulator.Registers.IA.set(a.get());
+			this.emulator.Registers.IA.set(a.getA());
 		}, this.SpecialOpSet),
 		
 		RFI: new Op(this, "RFI", OPERATION_RFI, 3, function(a) { 
@@ -542,7 +566,7 @@ function Emulator() {
 		}, this.SpecialOpSet),
 		
 		HWQ: new Op(this, "HWQ", OPERATION_HWQ, 4, function(a) { 
-			var dev = this.emulator.devices[a.get()];
+			var dev = this.emulator.devices[a.getA()];
 			if(dev) {
 				this.emulator.Registers.A.set(dev.id & 0xffff);
 				this.emulator.Registers.B.set((dev.id >> 16) & 0xffff);
@@ -554,7 +578,7 @@ function Emulator() {
 		}, this.SpecialOpSet),
 		
 		HWI: new Op(this, "HWI", OPERATION_HWI, 4, function(a) { 
-			var dev = this.emulator.devices[a.get()];
+			var dev = this.emulator.devices[a.getA()];
 			if(dev)
 				dev.interrupt();
 		}, this.SpecialOpSet),
@@ -652,8 +676,8 @@ function Emulator() {
 				Utils.hex(instruction.a) + ",\t" + 
 				Utils.hex(instruction.b) + ")"
 			);
-			op.exec(instruction.a, instruction.b);
 		}
+		op.exec(instruction.a, instruction.b);
 	};
 	
 	this.nextWord = function() {
@@ -661,14 +685,22 @@ function Emulator() {
 		return this.program[this.Registers.PC.inc()];
 	};
 	
-	this.skipInstruction = function() {
+	this.getParamValue = function(val) {
+		return this.Values[new String(val)];
+	};
+	
+	this.skipInstruction = function(skipAgain) {
 		var instruction = Utils.parseInstruction(this.program[this.PC.inc()]);
 		this.CPU_CYCLE++;
 		
-		if(instruction.opcode >= OPERATION_IFB && instruction.opcode <= OPERATION_IFU) {
+		// skip "next word" values by invoking get() on the params
+		this.getParamValue(instruction.a).get();
+		if(instruction.opcode != 0)
+			this.getParamValue(instruction.b).get();
+		
+		if(skipAgain && instruction.opcode >= OPERATION_IFB && instruction.opcode <= OPERATION_IFU) {
 			// skip additional instruction at cost of an additional cycle
-			instruction = Utils.parseInstruction(this.program[this.PC.inc()]);
-			this.CPU_CYCLE++;
+			this.skipInstruction(false);
 		}
 		
 	};

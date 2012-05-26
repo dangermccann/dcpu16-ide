@@ -21,8 +21,8 @@ function tokenize() {
 
 function run() {
 	var e = new Emulator();
-	//e.async = true;
-	e.verbose = true;
+	e.async = true;
+	e.verbose = false;
 	var m = new Monitor(e);
 	document.getElementById("monitor").appendChild(m.getDOMElement());
 	

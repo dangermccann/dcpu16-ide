@@ -110,7 +110,7 @@ Assembler =  {
 				var val;
 				if(token.type == "label_ref") {
 					if(labels != null) {
-						val = labels[token.lexeme];
+						val = labels[token.lexeme.toLowerCase()];
 						
 						if(val == null) this.throwInvalid(lineNumber, token);
 					}
@@ -139,8 +139,9 @@ Assembler =  {
 				}
 				else {
 					// literal
-					if(argument.expressionValue >= -1 && argument.expressionValue <= 30 && token.type != "label_ref") {
-						argument.value = Literals["L_"+argument.expressionValue];
+					var val32 = Utils.to32BitSigned(argument.expressionValue);
+					if(val32 >= -1 && val32 <= 30 && token.type != "label_ref") {
+						argument.value = Literals["L_"+val32];
 						argument.nextWord = null;
 					}
 					else {
@@ -172,7 +173,7 @@ Assembler =  {
 					argument.value = Values.SP_OFFSET;
 				else if(token.lexeme == "PUSH")
 					argument.value = Values.SP_OFFSET;
-				else if(token.lexeme == "PEAK")
+				else if(token.lexeme == "PEEK")
 					argument.value = Values.SP_OFFSET + 1;
 			}
 			else if(token.type == "open_bracket") {
@@ -221,7 +222,7 @@ Assembler =  {
 						offset++;
 					}
 					else if(token.type == "label_def") {
-						labels[token.lexeme.substr(1)] = offset;
+						labels[token.lexeme.substr(1).toLowerCase()] = offset;
 					}
 					else if(token.type == "reserved_word" && token.lexeme == "DAT") {
 						dat = token;

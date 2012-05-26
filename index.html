@@ -129,6 +129,7 @@
 				
 				var e = new Emulator();
 				e.async = true;
+				e.verbose = false;
 				e.devices.push(new Monitor(e));
 				e.devices.push(new Keyboard(e));
 				e.run(program);

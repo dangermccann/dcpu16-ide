@@ -30,8 +30,12 @@ function Monitor(_emulator) {
 	];
 	
 	this.borderColor = 8;
-	
 	this.zoom = 2;
+	this.memOffset = 0x8000;
+	this.drawInterval = 0;
+	
+	var _this = this;
+	this.drawInterval = setInterval(function() { _this.refresh() }, 100);
 	
 	this.canvas = document.createElement("canvas");
 	this.canvas.width = this.zoom * 128;
@@ -77,11 +81,7 @@ Monitor.prototype.interrupt = function() {
 }
 
 Monitor.prototype.memMapScreen = function(offset) {
-	for(var y = 0; y < 12; y++) {
-		for(var x = 0; x < 32; x++) {
-			this.drawCell(x, y, this.emulator.RAM[offset + x + y*32]);
-		}
-	}
+	this.memOffset = offset;
 }
 
 Monitor.prototype.drawCell = function(x, y, word) {
@@ -115,9 +115,21 @@ Monitor.prototype.drawGlyph = function(x, y, glyph, fg, bg, blink) {
 	
 }
 
+Monitor.prototype.refresh = function() {
+	for(var y = 0; y < 12; y++) {
+		for(var x = 0; x < 32; x++) {
+			this.drawCell(x, y, this.emulator.RAM[this.memOffset + x + y*32]);
+		}
+	}
+}
+
 Monitor.prototype.disconnect = function() {
 	this.context.fillStyle = "#777777";
 	this.context.fillRect(0, 0, 128, 96);
+	this.memOffset = 0;
+	if(this.drawInterval != 0)
+		clearInterval(this.drawInterval);
+	this.drawInterval = 0;
 }
 
 Monitor.prototype.memMapFont = function(offset) {
