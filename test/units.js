@@ -642,7 +642,7 @@ function units() {
 					 "JSR imy_label\n" +
 					 "dat \"my string\", 0";
 		
-		var lines = Tokenizer.tokenize(input);
+		var lines = Tokenizer.tokenize(input).lines;
 		equal(lines.length, 6, "6 lines tokenized");
 		equal(lines[0][0].type, "comment", "Line 1 comment");
 		equal(lines[1][0].type, "command", "Line 2 command");
@@ -665,12 +665,62 @@ function units() {
 	});
 	
 	test("Invalid Token Test", function() { 
-		raises(function() {
-			Tokenizer.tokenize("(*&^%$#HDBGFDAS");
-		}, "Test invalid token");
+		equal(Tokenizer.tokenize("(*&^%$#HDBGFDAS").errors.length, 1);
+	});
+	
+	module("Assembler Module");
+	
+	test("Assembly Test 1", function() { 
+		var input = "; test app #1\n" + 
+					 "SET A, B\n" + 
+					 "ADD [I], [J]\n" + 
+					 "SUB C, 0x5\n" + 
+					 "MLI X, 0x555\n" + 
+					 "DIV [Y+3], [Z]\n" + 
+					 "MOD [Z+0x555], [A+0x111]\n" +
+					 "SHR I, 1+2+3+4\n" + 
+					 "SHL J, 5*99-2\n";
+		
+		var output = [ 0x0401, 0x3dc2, 0x9843, 0x7c65, 
+						0x0555, 0x3686, 0x0003, 0x42a8, 
+						0x0111, 0x0555, 0xaccd, 0x7cef, 
+						0x01ed ];
+						
+		var actual = Assembler.compileSource(input).bytecode();
+		ok(compareArrays(output, actual), "Output is correct");
+	});
+	
+	test("Assembly Test 2", function() { 
+		var input = "; test app #2\n" + 
+					 "SET PUSH, A\n" +
+					 "SET J, PUSH\n" +
+					 "ADD Z, PEEK\n" +
+					 ":label1 ; asdf \n" +
+					 "SET PUSH, A\n" +
+					 "SET PC, 1\n" +
+					 "IFE B, [3+A]\n" +
+					 "SET PC, label1\n";
+		
+		var output = [ 0x0301, 0x60e1, 0x64a2, 0x0301, 
+						0x8b81, 0x4032, 0x0003, 0x7f81, 
+						0x0003   ];
+						
+		var actual = Assembler.compileSource(input).bytecode();
+		ok(compareArrays(output, actual), "Output is correct");
 	});
 	
 	
+	
+	
+	function compareArrays(ary1, ary2) {
+		if(ary1.length != ary2.length)
+			return false;
+		for(var i = 0; i < ary1.length; i++) {
+			if(ary1[i] !== ary2[i])
+				return false;
+		}
+		return true;
+	}
 };
 
 

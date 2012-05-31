@@ -749,5 +749,26 @@ function Device(_id, _version, _manufacturer, _emulator) {
 Device.prototype.interrupt = function() { };
 
 
+function Debugger(_emulator) {
+	this.emulator = _emulator;
+	this.breakpoints = {};
+	
+	this.emulator.attachDebugger(this);
+}
+Debugger.prototype.getBreakpoints = function() {
+	return this.breakpoints;
+}
+Debugger.prototype.toggleBreakpoint = function(line) {
+	line += "";	// convert to string
+	if(this.breakpoints[line])
+		delete this.breakpoints[line];
+	else
+		this.breakpoints[line] = line;
+}
+Debugger.prototype.run = function() { }
+Debugger.prototype.step = function() { }
 
+Debugger.prototype.onBreakpoint = function(line) {
+
+}
 

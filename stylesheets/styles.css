@@ -1,31 +1,75 @@
 body { 
 	font-family: courier, 'courier new', 'fixed-width'; 
 	font-size: 14px;
-	background: #444444;
+	background: #000000;
+	margin: 0px; 
+	padding: 0px;
 }
-.assembly {
-	background: #111111;
-	padding: 6px;
-	border: 1px dashed #cccccc;
-	overflow: hidden;
-	width: 637px; 
-	margin-bottom: 10px;
-	margin-top: 10px;
+
+#toolbar {
+	padding: 3px;
+	margin-top: 2px;
+}
+
+.scrolling_contents {
+	overflow-y: auto !important;
 }
 
 textarea {
-	font-size: 14px;
-	background: #111111;
-	padding: 6px;
-	border: 1px dashed #cccccc;
+	background: none;
 	color: #ffffff;
-	width: 650px; 
+	border: 1px solid #695649;
+	height: 100% !important; 
+	width: 100%; 
+	margin: 0; 
+	padding: 0 4px 0 4px;
+}
+
+#editor {
+	position: absolute; 
+	top: 41px; 
+	left: 4px; 
+	right: 4px; 
+	bottom: 4px; 
+	padding: 0 !important; 
+	overflow: hidden !important;
+}
+
+#editor textarea {
+	overflow-x: hidden !important;
+}
+
+.ace_gutter-cell.ace_breakpoint{
+    border-radius: 20px 0px 0px 20px;
+    box-shadow: 0px 0px 1px 1px red inset;
+} 
+
+.dialog_contents {
+	position: absolute !important; 
+	top: 34px; 
+	left: 4px; 
+	right: 4px; 
+	bottom: 0; 
+	padding-left: 3px !important; 
+	padding-right: 5px !important;  
+	padding-top: 7px !important; 
+	padding-bottom: 5px !important; 
+	
+}
+
+#listing {
+	top: 39px; 
+	padding-top: 0px !important;
+	padding-left: 0px !important;
+	margin-left: 2px;
 }
 
 .offset {
-	color: #ffffff;
+	color: #aaaaaa;
 	float: left; 
-	width: 70px;
+	width: 62px;
+	margin-right: 14px;
+	background: #382617;
 }
 .bytecode {
 	color: #ffffff;
@@ -34,7 +78,6 @@ textarea {
 }
 .tokens {
 	float: left; 
-	width: 390px;
 }
 .clear {
 	clear: both;

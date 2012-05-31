@@ -1,143 +1,221 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 	<head>
+		<link type="text/css" href="stylesheets/custom-theme/jquery-ui-1.8.20.custom.css" rel="stylesheet" />
 		<link type="text/css" href="stylesheets/styles.css" rel="stylesheet" />
-		<script src="http://code.jquery.com/jquery-latest.js"></script>
+		<script type="text/javascript" src="javascript/jquery-1.7.2.min.js"></script>
+		<script type="text/javascript" src="javascript/jquery-ui-1.8.20.custom.min.js"></script>
 		<script type="text/javascript" src="javascript/emulator.js"></script>
+		<script type="text/javascript" src="javascript/assembler.js"></script>
 		<script type="text/javascript" src="javascript/lem1820.js"></script>
 		<script type="text/javascript" src="javascript/keyboard.js"></script>
 		<script type="text/javascript" src="javascript/clock.js"></script>
-		<script type="text/javascript" src="javascript/assembler.js"></script>
-		
+		<script type="text/javascript" src="javascript/ace/ace-uncompressed.js" charset="utf-8"></script>
+		<script type="text/javascript" src="javascript/ace/theme-monokai.js" charset="utf-8"></script>
+		 
 		
 		<script>
-			$(document).ready(function(){
+			var listing;
+			var emulator;
+			var editor;
+			
+			function init() {
+				editor = ace.edit("editor");
+				editor.setTheme("ace/theme/monokai");
+				editor.setHighlightActiveLine(false);
+				editor.resize();
+				editor.getSession().setUseSoftTabs(true);
+				editor.getSession().on('change', function() { 
+					assemble();
+				});
+				editor.on("guttermousedown", function(e){
+					console.log(e);
+					var target = e.domEvent.target;
+					if (target.className.indexOf("ace_gutter-cell") == -1)
+						return;
+					if (!editor.isFocused())
+						return;
+					if (e.clientX > 25 + target.getBoundingClientRect().left)
+						return;
 
-				var program = [
-					
-					Utils.makeInstruction(OPERATION_SET, Values.NEXT_WORD_LITERAL, REGISTER_X), 0x0200,
-					
-					// clear background
-					Utils.makeInstruction(	OPERATION_SET, Values.NEXT_WORD_LITERAL, 
-											REGISTER_X + Values.REGISTER_VALUE_OFFSET), 
-											Utils.makeVideoCell(0x20, 0, 1, 0xa),
-					Utils.makeInstruction(OPERATION_ADD, Literals.L_1, REGISTER_X),
-					Utils.makeInstruction(OPERATION_IFN, REGISTER_X, Values.NEXT_WORD_LITERAL), 0x190,
-					Utils.makeInstruction(OPERATION_SUB, Literals.L_6, REGISTER_PC),
-					
-					
-					Utils.makeInstruction(OPERATION_SET, Values.NEXT_WORD_LITERAL, REGISTER_X), 0x0200,
-					
-					// h
-					Utils.makeInstruction(	OPERATION_SET, Values.NEXT_WORD_LITERAL, 
-											REGISTER_X + Values.REGISTER_VALUE_OFFSET), 
-											Utils.makeVideoCell(0x68, 0, 1, 0xa),
-					Utils.makeInstruction(OPERATION_ADD, Literals.L_1, REGISTER_X),
-					
-					// e
-					Utils.makeInstruction(	OPERATION_SET, Values.NEXT_WORD_LITERAL, 
-											REGISTER_X + Values.REGISTER_VALUE_OFFSET), 
-											Utils.makeVideoCell(0x65, 0, 1, 0xa),
-					Utils.makeInstruction(OPERATION_ADD, Literals.L_1, REGISTER_X),
-					
-					// l
-					Utils.makeInstruction(	OPERATION_SET, Values.NEXT_WORD_LITERAL, 
-											REGISTER_X + Values.REGISTER_VALUE_OFFSET), 
-											Utils.makeVideoCell(0x6c, 0, 1, 0xa),
-					Utils.makeInstruction(OPERATION_ADD, Literals.L_1, REGISTER_X),
-					
-					// l
-					Utils.makeInstruction(	OPERATION_SET, Values.NEXT_WORD_LITERAL, 
-											REGISTER_X + Values.REGISTER_VALUE_OFFSET), 
-											Utils.makeVideoCell(0x6c, 0, 1, 0xa),
-					Utils.makeInstruction(OPERATION_ADD, Literals.L_1, REGISTER_X),
-					
-					// o
-					Utils.makeInstruction(	OPERATION_SET, Values.NEXT_WORD_LITERAL, 
-											REGISTER_X + Values.REGISTER_VALUE_OFFSET), 
-											Utils.makeVideoCell(0x6f, 0, 1, 0xa),
-					Utils.makeInstruction(OPERATION_ADD, Literals.L_1, REGISTER_X),
-					
-					// 
-					Utils.makeInstruction(	OPERATION_SET, Values.NEXT_WORD_LITERAL, 
-											REGISTER_X + Values.REGISTER_VALUE_OFFSET), 
-											Utils.makeVideoCell(0x20, 0, 1, 0xa),
-					Utils.makeInstruction(OPERATION_ADD, Literals.L_1, REGISTER_X),
-					
-					// w
-					Utils.makeInstruction(	OPERATION_SET, Values.NEXT_WORD_LITERAL, 
-											REGISTER_X + Values.REGISTER_VALUE_OFFSET), 
-											Utils.makeVideoCell(0x77, 0, 1, 0xa),
-					Utils.makeInstruction(OPERATION_ADD, Literals.L_1, REGISTER_X),
-					
-					// o
-					Utils.makeInstruction(	OPERATION_SET, Values.NEXT_WORD_LITERAL, 
-											REGISTER_X + Values.REGISTER_VALUE_OFFSET), 
-											Utils.makeVideoCell(0x6f, 0, 1, 0xa),
-					Utils.makeInstruction(OPERATION_ADD, Literals.L_1, REGISTER_X),
-					
-					// r
-					Utils.makeInstruction(	OPERATION_SET, Values.NEXT_WORD_LITERAL, 
-											REGISTER_X + Values.REGISTER_VALUE_OFFSET), 
-											Utils.makeVideoCell(0x72, 0, 1, 0xa),
-					Utils.makeInstruction(OPERATION_ADD, Literals.L_1, REGISTER_X),
-					
-					// l
-					Utils.makeInstruction(	OPERATION_SET, Values.NEXT_WORD_LITERAL, 
-											REGISTER_X + Values.REGISTER_VALUE_OFFSET), 
-											Utils.makeVideoCell(0x6c, 0, 1, 0xa),
-					Utils.makeInstruction(OPERATION_ADD, Literals.L_1, REGISTER_X),
-					
-					// d
-					Utils.makeInstruction(	OPERATION_SET, Values.NEXT_WORD_LITERAL, 
-											REGISTER_X + Values.REGISTER_VALUE_OFFSET), 
-											Utils.makeVideoCell(0x64, 0, 1, 0xa),
-					Utils.makeInstruction(OPERATION_ADD, Literals.L_1, REGISTER_X),
-					
-					Utils.makeInstruction(OPERATION_SET, Values.NEXT_WORD_LITERAL, REGISTER_A), 0x3,
-					Utils.makeInstruction(OPERATION_SET, Literals.L_5, REGISTER_B),
-					Utils.makeSpecialInstruction(OPERATION_HWI, Literals.L_0),
-					
-					Utils.makeInstruction(OPERATION_SET, Literals.L_0, REGISTER_A),
-					Utils.makeInstruction(OPERATION_SET, Values.NEXT_WORD_LITERAL, REGISTER_B), 0x200,
-					Utils.makeSpecialInstruction(OPERATION_HWI, Literals.L_0),
-					
-					
-					// check for key
-					Utils.makeInstruction(OPERATION_SET, Literals.L_1, REGISTER_A),
-					Utils.makeSpecialInstruction(OPERATION_HWI, Literals.L_1),
-					Utils.makeInstruction(OPERATION_IFE, REGISTER_C, Values.NEXT_WORD_LITERAL), 0x00,
-					Utils.makeInstruction(OPERATION_SUB, Literals.L_5, REGISTER_PC),
-					
-					// prepare new X value
-					Utils.makeInstruction(OPERATION_SET, Literals.L_1, REGISTER_Y),
-					Utils.makeInstruction(OPERATION_SHL, Literals.L_8, REGISTER_Y),
-					Utils.makeInstruction(OPERATION_BOR, REGISTER_Y, REGISTER_C),
-					
-					Utils.makeInstruction(OPERATION_SET, Literals.L_10, REGISTER_Y),
-					Utils.makeInstruction(OPERATION_SHL, Literals.L_12, REGISTER_Y),
-					Utils.makeInstruction(OPERATION_BOR, REGISTER_Y, REGISTER_C),
-					Utils.makeInstruction(	OPERATION_SET, REGISTER_C, 
-											REGISTER_X + Values.REGISTER_VALUE_OFFSET),
-					Utils.makeInstruction(OPERATION_ADD, Literals.L_1, REGISTER_X),
-					Utils.makeInstruction(OPERATION_SET, Literals.L_0, REGISTER_A),
-					Utils.makeSpecialInstruction(OPERATION_HWI, Literals.L_0),
-					
-					Utils.makeInstruction(OPERATION_SUB, Literals.L_16, REGISTER_PC)
-					
-				];
+					var row = e.getDocumentPosition().row
+					e.editor.session.setBreakpoint(row)
+					e.stop()
+				});
 				
-				var e = new Emulator();
-				e.async = true;
-				e.verbose = false;
-				e.devices.push(new Monitor(e));
-				e.devices.push(new Keyboard(e));
-				e.run(program);
-
+				
+				
+			
+				emulator = new Emulator();
+				emulator.async = true;
+				emulator.verbose = false;
+				var m = new Monitor(emulator);
+				document.getElementById("monitor").appendChild(m.getDOMElement());
+				
+				emulator.devices.push(m);
+				emulator.devices.push(new Keyboard(emulator));
+			}
+			
+			function assemble() {
+				var tokenized = Tokenizer.tokenize(editor.getSession().getValue());
+				listing = Assembler.compile(tokenized.lines);
+				
+				var errors = (new Array()).concat(tokenized.errors, listing.errors);
+				
+				//$("#assembly").html(listing.htmlFormat());
+				
+				if(errors.length == 0) {
+					$("#assembly").html("OK");
+					$("#assembly").css("background", "none");
+				}
+				else {
+					$("#assembly").css("background", "#bc3329");
+					var str = "";
+					for(var i = 0; i < errors.length; i++) {
+						str += "<div onclick='gotoLine("+errors[i].line+")' style='padding: 4px; margin-bottom: 3px; cursor: pointer;'>";
+						str += "Line " + errors[i].line + ": ";
+						str += errors[i].message;
+						str += "</div>";
+					}
+					$("#assembly").html(str);
+				}
+				
+				$("#output").html(listing.bytecodeText());
+			}
+			
+			function run() {
+				emulator.reboot();
+				emulator.run(listing.bytecode());
+			}
+			
+			function reset() {
+				emulator.reboot();
+			}
+			
+			function gotoLine(line) {
+				editor.gotoLine(line);
+				editor.focus();
+			}
+			
+			function startDebugger() {
+				$("#assemble_button").hide();
+				$("#debug_button").hide();
+			
+				$("#run_button").show();
+				$("#step_button").show();
+				$("#stop_button").show();
+				$("#reset_button").show();
+				
+				$("#listing").html(listing.htmlFormat());
+				
+				$("#editing_windows").hide();
+				$("#debugging_windows").show();
+				
+			}
+			
+			function stopDebugger() {
+				$("#assemble_button").show();
+				$("#debug_button").show();
+			
+				$("#run_button").hide();
+				$("#step_button").hide();
+				$("#stop_button").hide();
+				$("#reset_button").hide();
+				
+				$("#editing_windows").show();
+				$("#debugging_windows").hide();
+			}
+			
+			$(document).ready(function(){
+				$("#assemble_button").button({ icons: { primary: "ui-icon-link" } });
+				$("#debug_button").button({ icons: { primary: "ui-icon-radio-on" } });
+				
+				$("#run_button").button({ icons: { primary: "ui-icon-play" } }).hide();
+				$("#step_button").button({ icons: { primary: "ui-icon-arrowreturnthick-1-e" } }).hide();
+				$("#stop_button").button({ icons: { primary: "ui-icon-stop" } }).hide();
+				$("#reset_button").button({ icons: { primary: "ui-icon-arrowrefresh-1-s" } }).hide();
+				
+				init();
+				
+				//$("#source-dialog").resizable( { autoHide: true, handles: "s" });
+				//$("#assembly-dialog").resizable( { autoHide: true, handles: "n" });
 			});
 		</script>
 	</head>
 	<body>
+		<div id="toolbar" class="ui-widget-header ui-corner-all">
+			<button id="assemble_button" onclick="assemble()">Assemble</button>
+			<button id="debug_button" onclick="startDebugger()">Debug</button>
+			<button id="run_button" onclick="run()">Run</button>
+			<button id="step_button">Step</button>
+			<button id="stop_button" onclick="stopDebugger()">Stop</button>
+			<button id="reset_button" onclick="reset()">Reset</button>
+		</div>
+		
+		<div>
+		
+			<div class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right:0px; height:255px; top: 50px;">
+				<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
+					<span class="ui-dialog-title">Emulator</span>
+				</div>
+				<div style="height: auto; width: auto;" class="ui-dialog-content ui-widget-content">
+					<div id="monitor"></div>
+				</div>
+			</div>
+			
+			
+			<div id="editing_windows">
+				<div id="source-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right: 310px; left: 0px; bottom: 220px; top: 50px; width: auto;">
+					<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
+						<span class="ui-dialog-title">Source</span>
+					</div>
+					<div id="editor" class="ui-dialog-content ui-widget-content"></div>
+				</div>
+				
+				<div id="assembly-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="left: 0px; bottom: 0px; height: 210px; right: 310px; width: auto;">
+				   <div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
+					  <span class="ui-dialog-title">Assembly Result</span>
+				   </div>
+				   <div id="assembly" class="dialog_contents ui-dialog-content ui-widget-content scrolling_contents"></div>
+				</div>
+				
+				<div id="ouput-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right:0px; width: 300px; bottom: 0px; top: 310px;">
+				   <div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
+					  <span class="ui-dialog-title">Output</span>
+				   </div>
+				   <div id="output" class="ui-dialog-content ui-widget-content dialog_contents scrolling_contents"></div>
+				</div>
+			
+			</div>
+			
+			<div id="debugging_windows" style="display: none">
+				<div id="listing-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right: 310px; left: 0px; bottom: 220px; top: 50px; width: auto;">
+					<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
+						<span class="ui-dialog-title">Listing</span>
+					</div>
+					<div id="listing"  
+						class="ui-dialog-content ui-widget-content dialog_contents scrolling_contents"></div>
+				</div>
+				
+				<div id="memory-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="left: 0px; bottom: 0px; height: 210px; right: 310px; width: auto;">
+				   <div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
+					  <span class="ui-dialog-title">Memory</span>
+				   </div>
+				   <div id="memory" class="dialog_contents ui-dialog-content ui-widget-content scrolling_contents"></div>
+				</div>
+				
+				<div id="registers-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right:0px; width: 300px; bottom: 0px; top: 310px;">
+				   <div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
+					  <span class="ui-dialog-title">Registers</span>
+				   </div>
+				   <div id="registers" class="ui-dialog-content ui-widget-content dialog_contents scrolling_contents"></div>
+				</div>
+			</div>
+		</div>
+		
+		
+		
+		
 		
 	</body>
 </html>
