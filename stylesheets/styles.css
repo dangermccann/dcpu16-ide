@@ -62,22 +62,41 @@ textarea {
 	padding-top: 0px !important;
 	padding-left: 0px !important;
 	margin-left: 2px;
+	z-index: 16;
+}
+
+#debugger_line {
+	position: absolute;
+	height: 14px;
+    left: 4px;
+    right: 20px;
+    top: 39px;
+    z-index: 15;
+	background: #874309;
 }
 
 .offset {
-	color: #aaaaaa;
+	color: #777777;
 	float: left; 
 	width: 62px;
 	margin-right: 14px;
-	background: #382617;
+	line-height: 14px;
+	cursor: pointer;
 }
+.breakpoint {
+	background: #971200;
+	color: #aaaaaa !important;
+}
+
 .bytecode {
 	color: #ffffff;
 	float: left; 
 	width: 170px;
+	line-height: 14px;
 }
 .tokens {
 	float: left; 
+	line-height: 14px;
 }
 .clear {
 	clear: both;
@@ -88,7 +107,7 @@ textarea {
 	white-space: nowrap;
 }
 .hexidecimal { 
-	color: #007777; 
+	color: #3bd4d4; 
 }
 .decimal { 
 	color: #0077ff; 
@@ -122,6 +141,21 @@ textarea {
 	color: #dddddd; 
 }
 .register { 
-	color: #aa33aa; 
+	color: #fe9fde; 
 }
 .space {  }
+
+
+.register-name {
+	float: left;
+	color: #fe9fde; 
+	width: 35px;
+}
+.register-value {
+	float: left;
+	color: #ffffff;
+}
+
+.changed {
+	color: #fc4343 !important;
+}

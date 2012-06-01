@@ -18,6 +18,7 @@
 			var listing;
 			var emulator;
 			var editor;
+			var _debugger;
 			
 			function init() {
 				editor = ace.edit("editor");
@@ -54,6 +55,15 @@
 				
 				emulator.devices.push(m);
 				emulator.devices.push(new Keyboard(emulator));
+				
+				_debugger = new Debugger(emulator);
+				_debugger.onStep = function(location) {
+					updateDebugger(location);
+				};
+				_debugger.onPaused = function(location) {
+					updateDebugger(location);
+				};
+				
 			}
 			
 			function assemble() {
@@ -83,15 +93,6 @@
 				$("#output").html(listing.bytecodeText());
 			}
 			
-			function run() {
-				emulator.reboot();
-				emulator.run(listing.bytecode());
-			}
-			
-			function reset() {
-				emulator.reboot();
-			}
-			
 			function gotoLine(line) {
 				editor.gotoLine(line);
 				editor.focus();
@@ -106,10 +107,19 @@
 				$("#stop_button").show();
 				$("#reset_button").show();
 				
+				$("#listing").find(".offset").unbind();
 				$("#listing").html(listing.htmlFormat());
+				$("#listing").find(".offset").click(function(evt) {
+					$(this).toggleClass("breakpoint");
+					_debugger.toggleBreakpoint(parseInt($(this).text()));
+				});
 				
 				$("#editing_windows").hide();
 				$("#debugging_windows").show();
+				
+				emulator.reboot();
+				emulator.paused = true;
+				emulator.run(listing.bytecode());
 				
 			}
 			
@@ -135,11 +145,93 @@
 				$("#stop_button").button({ icons: { primary: "ui-icon-stop" } }).hide();
 				$("#reset_button").button({ icons: { primary: "ui-icon-arrowrefresh-1-s" } }).hide();
 				
+				$("#listing").scroll(updateDebuggerLine);
+				
 				init();
 				
 				//$("#source-dialog").resizable( { autoHide: true, handles: "s" });
 				//$("#assembly-dialog").resizable( { autoHide: true, handles: "n" });
 			});
+			
+			function run() {
+				_debugger.run();
+				updateDebugger();
+			}
+			
+			function step() {
+				_debugger.step();
+			}
+			
+			function reset() {
+				emulator.reboot();
+				emulator.paused = true;
+				emulator.run(listing.bytecode());
+			}
+			
+			
+			function updateDebugger() {
+				if(emulator.paused) {
+					$("#debugger_line").show();
+					
+					updateDebuggerLine();
+					ensureDebuggerLineVisible();
+					
+					updateRegisterWindow();
+				}
+				else {
+					$("#debugger_line").hide();
+				}
+			}
+			
+			function calculateDebuggerLine() {
+				// find line from memory offset
+				var location = emulator.PC.get();
+				var line = 0;
+				for(line = 0; line < listing.lines.length; line++) {
+					if(listing.lines[line].offset >= location) {
+						location = listing.lines[line].offset;
+						break;
+					}
+				}
+				// skip lines that are noops
+				while(line < listing.lines.length && listing.lines[line].offset == location) {
+					line++;
+				}
+				line--;
+				
+				return line;
+			}
+			
+			function getDebuggerLineTop(line) {
+				var lineHeight= 14;
+				return line*lineHeight + $("#listing").position().top - $("#listing").scrollTop();
+			}
+			
+			function updateDebuggerLine() {
+				$("#debugger_line").css("top", getDebuggerLineTop(calculateDebuggerLine()) + "px");
+			}
+			
+			function ensureDebuggerLineVisible() {
+				var top = getDebuggerLineTop(calculateDebuggerLine());
+				if(top > $("#listing").scrollTop() + $("#listing").height() - 14 || top < $("#listing").scrollTop())
+					$("#listing").scrollTop(top);
+			}
+			
+			
+			function updateRegisterWindow() {
+				for(var reg in emulator.Registers) {
+					var val = Utils.hex2(emulator.Registers[reg].get());
+					val += "&nbsp;&nbsp;"
+					val += "[" + Utils.hex2(emulator.RAM[emulator.Registers[reg].get()] || 0) + "]";
+					
+					var div = $("#register-" + reg).find(".register-value");
+					if(div.html() != val)
+						div.addClass("changed");
+					else
+						div.removeClass("changed");
+					div.html(val);
+				}
+			}
 		</script>
 	</head>
 	<body>
@@ -147,7 +239,7 @@
 			<button id="assemble_button" onclick="assemble()">Assemble</button>
 			<button id="debug_button" onclick="startDebugger()">Debug</button>
 			<button id="run_button" onclick="run()">Run</button>
-			<button id="step_button">Step</button>
+			<button id="step_button" onclick="step()">Step</button>
 			<button id="stop_button" onclick="stopDebugger()">Stop</button>
 			<button id="reset_button" onclick="reset()">Reset</button>
 		</div>
@@ -173,17 +265,17 @@
 				</div>
 				
 				<div id="assembly-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="left: 0px; bottom: 0px; height: 210px; right: 310px; width: auto;">
-				   <div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
+					<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
 					  <span class="ui-dialog-title">Assembly Result</span>
-				   </div>
-				   <div id="assembly" class="dialog_contents ui-dialog-content ui-widget-content scrolling_contents"></div>
+					</div>
+					<div id="assembly" class="dialog_contents ui-dialog-content ui-widget-content scrolling_contents"></div>
 				</div>
 				
 				<div id="ouput-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right:0px; width: 300px; bottom: 0px; top: 310px;">
-				   <div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
+					<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
 					  <span class="ui-dialog-title">Output</span>
-				   </div>
-				   <div id="output" class="ui-dialog-content ui-widget-content dialog_contents scrolling_contents"></div>
+					</div>
+					<div id="output" class="ui-dialog-content ui-widget-content dialog_contents scrolling_contents"></div>
 				</div>
 			
 			</div>
@@ -195,20 +287,83 @@
 					</div>
 					<div id="listing"  
 						class="ui-dialog-content ui-widget-content dialog_contents scrolling_contents"></div>
+						
+					<div id="debugger_line"></div>
 				</div>
 				
 				<div id="memory-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="left: 0px; bottom: 0px; height: 210px; right: 310px; width: auto;">
-				   <div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
+					<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
 					  <span class="ui-dialog-title">Memory</span>
-				   </div>
-				   <div id="memory" class="dialog_contents ui-dialog-content ui-widget-content scrolling_contents"></div>
+					</div>
+					<div id="memory" class="dialog_contents ui-dialog-content ui-widget-content scrolling_contents"></div>
 				</div>
 				
 				<div id="registers-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right:0px; width: 300px; bottom: 0px; top: 310px;">
-				   <div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
+					<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
 					  <span class="ui-dialog-title">Registers</span>
-				   </div>
-				   <div id="registers" class="ui-dialog-content ui-widget-content dialog_contents scrolling_contents"></div>
+					</div>
+					<div id="registers" class="ui-dialog-content ui-widget-content dialog_contents scrolling_contents">
+						<div id="register-A">
+							<div class="register-name">A:</div>
+							<div class="register-value">0x0000</div>
+							<div class="clear"></div>
+						</div>
+						<div id="register-B">
+							<div class="register-name">B:</div>
+							<div class="register-value">0x0000</div>
+							<div class="clear"></div>
+						</div>
+						<div id="register-C">
+							<div class="register-name">C:</div>
+							<div class="register-value">0x0000</div>
+							<div class="clear"></div>
+						</div>
+						<div id="register-X">
+							<div class="register-name">X:</div>
+							<div class="register-value">0x0000</div>
+							<div class="clear"></div>
+						</div>
+						<div id="register-Y">
+							<div class="register-name">Y:</div>
+							<div class="register-value">0x0000</div>
+							<div class="clear"></div>
+						</div>
+						<div id="register-Z">
+							<div class="register-name">Z:</div>
+							<div class="register-value">0x0000</div>
+							<div class="clear"></div>
+						</div>
+						<div id="register-I">
+							<div class="register-name">I:</div>
+							<div class="register-value">0x0000</div>
+							<div class="clear"></div>
+						</div>
+						<div id="register-J">
+							<div class="register-name">J:</div>
+							<div class="register-value">0x0000</div>
+							<div class="clear"></div>
+						</div>
+						<div id="register-SP">
+							<div class="register-name">SP:</div>
+							<div class="register-value">0x0000</div>
+							<div class="clear"></div>
+						</div>
+						<div id="register-PC">
+							<div class="register-name">PC:</div>
+							<div class="register-value">0x0000</div>
+							<div class="clear"></div>
+						</div>
+						<div id="register-EX">
+							<div class="register-name">EX:</div>
+							<div class="register-value">0x0000</div>
+							<div class="clear"></div>
+						</div>
+						<div id="register-IA">
+							<div class="register-name">IA:</div>
+							<div class="register-value">0x0000</div>
+							<div class="clear"></div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

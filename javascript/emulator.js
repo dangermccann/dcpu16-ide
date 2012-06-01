@@ -231,7 +231,7 @@ Utils = {
 
 function Emulator() { 
 
-	this.async = false;
+	this.async = true;
 	this.verbose = false;
 
 	this.CPU_CYCLE = 0;
@@ -623,6 +623,9 @@ function Emulator() {
 		if(this.PC.get() < this.program.length) {
 			this.nextInstruction();
 			
+			if(this.attachedDebugger)
+				this.attachedDebugger.onStep(this.PC.get());
+			
 			// process one interrupt if we have one
 			if(this.interruptQueueingEnabled == false && this.interruptQueue.length > 0) {
 				this.processInterrupt(this.interruptQueue.pop());
@@ -635,6 +638,7 @@ function Emulator() {
 	
 	var _this = this;
 	this.asyncSteps = 1;
+	this.paused = false;
 	this.stepAsync = function() {
 		
 		if(Math.floor(_this.CPU_CYCLE / 1000) > _this.asyncSteps) {
@@ -642,12 +646,28 @@ function Emulator() {
 			setTimeout(_this.stepAsync, 1);
 		}
 		else {
-			if(_this.step()) {
-				_this.stepAsync();
+			if(_this.paused) {
+				if(_this.attachedDebugger)
+						_this.attachedDebugger.onPaused(_this.PC.get());
 			}
-			else
-				_this.exit();
+			else {
+				if(_this.attachedDebugger) {
+					if(_this.attachedDebugger.breakpoints[""+_this.PC.get()]) {
+						_this.paused = true;
+						return;
+					}
+				}
+			
+				_this.continueAsync();
+			}
 		}	
+	};
+	
+	this.continueAsync = function() {
+		if(_this.step()) 
+			this.stepAsync();
+		else
+			this.exit();
 	};
 	
 	this.nextInstruction = function() {
@@ -734,6 +754,11 @@ function Emulator() {
 		console.log("Program completed in " + this.CPU_CYCLE + " cycles");
 	};
 	
+	this.attachedDebugger = null;
+	this.attachDebugger = function(_debugger) {
+		this.attachedDebugger = _debugger;
+	}
+	
 	this.devices = [];
 	
 	this.boot();
@@ -741,6 +766,8 @@ function Emulator() {
 
 // generic device used for unit tests
 function Device(_id, _version, _manufacturer, _emulator) {
+	if(!_emulator.async) throw "Emulator must be in asynchronous mode to use a debugger with it.";
+
 	this.id = _id;
 	this.version = _version;
 	this.manufacturer = _manufacturer;
@@ -757,18 +784,31 @@ function Debugger(_emulator) {
 }
 Debugger.prototype.getBreakpoints = function() {
 	return this.breakpoints;
-}
-Debugger.prototype.toggleBreakpoint = function(line) {
-	line += "";	// convert to string
-	if(this.breakpoints[line])
-		delete this.breakpoints[line];
+};
+Debugger.prototype.toggleBreakpoint = function(location) {
+	location += "";	// convert to string
+	if(this.breakpoints[location])
+		delete this.breakpoints[location];
 	else
-		this.breakpoints[line] = line;
-}
-Debugger.prototype.run = function() { }
-Debugger.prototype.step = function() { }
+		this.breakpoints[location] = location;
+};
+Debugger.prototype.run = function() { 
+	if(this.emulator.paused) {
+		this.emulator.paused = false;
+		this.emulator.continueAsync();
+	}
+};
+Debugger.prototype.step = function() { 
+	if(this.emulator.paused) {
+		this.emulator.step();
+	}
+};
+Debugger.prototype.pause = function() { 
+	this.emulator.paused = true;
+};
 
-Debugger.prototype.onBreakpoint = function(line) {
+// events
+Debugger.prototype.onStep = function(location) { };
+Debugger.prototype.onPaused = function(location) { };
 
-}
 
