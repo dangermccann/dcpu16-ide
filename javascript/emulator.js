@@ -204,11 +204,11 @@ Utils = {
 	},
 	
 	hex: function(num) {
-		return "0x" + num.toString(16);
+		return "0x" + Utils.to16BitSigned(num).toString(16);
 	},
 	
 	hex2: function(num) {
-		var str = num.toString(16);
+		var str = Utils.to16BitSigned(num).toString(16);
 		return "0x" + "0000".substr(str.length) + str;
 	},
 	
@@ -623,7 +623,7 @@ function Emulator() {
 		if(this.PC.get() < this.program.length) {
 			this.nextInstruction();
 			
-			if(this.attachedDebugger)
+			if(this.attachedDebugger && this.paused)
 				this.attachedDebugger.onStep(this.PC.get());
 			
 			// process one interrupt if we have one
@@ -639,35 +639,43 @@ function Emulator() {
 	var _this = this;
 	this.asyncSteps = 1;
 	this.paused = false;
-	this.stepAsync = function() {
-		
-		if(Math.floor(_this.CPU_CYCLE / 1000) > _this.asyncSteps) {
-			_this.asyncSteps++;
-			setTimeout(_this.stepAsync, 1);
-		}
-		else {
-			if(_this.paused) {
-				if(_this.attachedDebugger)
-						_this.attachedDebugger.onPaused(_this.PC.get());
+	
+	this.runAsync = function() {
+		while(true) {
+			if(Math.floor(_this.CPU_CYCLE / 1000) > _this.asyncSteps) {
+				_this.asyncSteps++;
+				setTimeout(_this.runAsync, 1);
+				break;
 			}
 			else {
-				if(_this.attachedDebugger) {
-					if(_this.attachedDebugger.breakpoints[""+_this.PC.get()]) {
-						_this.paused = true;
-						return;
-					}
-				}
-			
-				_this.continueAsync();
+				if(!_this.stepAsync())
+					break;
 			}
-		}	
-	};
+		}
+	}
 	
-	this.continueAsync = function() {
-		if(_this.step()) 
-			this.stepAsync();
-		else
-			this.exit();
+	this.stepAsync = function() {
+		if(this.paused) {
+			if(this.attachedDebugger) {
+				this.attachedDebugger.onPaused(this.PC.get());
+				return false;
+			}
+		}
+		else {
+			if(_this.attachedDebugger) {
+				if(this.attachedDebugger.breakpoints[""+this.PC.get()]) {
+					this.paused = true;
+					this.attachedDebugger.onPaused(this.PC.get());
+					return false;
+				}
+			}
+		
+			var res = this.step();
+			if(!res)
+				this.exit();
+			return res;
+			
+		}	
 	};
 	
 	this.nextInstruction = function() {
@@ -795,7 +803,7 @@ Debugger.prototype.toggleBreakpoint = function(location) {
 Debugger.prototype.run = function() { 
 	if(this.emulator.paused) {
 		this.emulator.paused = false;
-		this.emulator.continueAsync();
+		this.emulator.runAsync();
 	}
 };
 Debugger.prototype.step = function() { 

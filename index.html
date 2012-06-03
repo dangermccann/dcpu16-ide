@@ -58,9 +58,11 @@
 				
 				_debugger = new Debugger(emulator);
 				_debugger.onStep = function(location) {
+					console.log("onStep");
 					updateDebugger(location);
 				};
 				_debugger.onPaused = function(location) {
+					console.log("onPaused");
 					updateDebugger(location);
 				};
 				
@@ -170,13 +172,15 @@
 			
 			
 			function updateDebugger() {
+				console.log("updateDebugger");
 				if(emulator.paused) {
 					$("#debugger_line").show();
 					
-					updateDebuggerLine();
 					ensureDebuggerLineVisible();
+					updateDebuggerLine();
 					
 					updateRegisterWindow();
+					updateMemoryWindow();
 				}
 				else {
 					$("#debugger_line").hide();
@@ -204,17 +208,20 @@
 			
 			function getDebuggerLineTop(line) {
 				var lineHeight= 14;
-				return line*lineHeight + $("#listing").position().top - $("#listing").scrollTop();
+				return line*lineHeight + $("#listing").position().top;
 			}
 			
 			function updateDebuggerLine() {
-				$("#debugger_line").css("top", getDebuggerLineTop(calculateDebuggerLine()) + "px");
+				var top = getDebuggerLineTop(calculateDebuggerLine()) - $("#listing").scrollTop()
+				$("#debugger_line").css("top", top + "px");
 			}
 			
 			function ensureDebuggerLineVisible() {
 				var top = getDebuggerLineTop(calculateDebuggerLine());
-				if(top > $("#listing").scrollTop() + $("#listing").height() - 14 || top < $("#listing").scrollTop())
-					$("#listing").scrollTop(top);
+				console.log("ensureDebuggerLineVisible | current: " + $("#listing").scrollTop() + " | dest: " + top);
+				if(top > $("#listing").scrollTop() + $("#listing").height() - 14 || top < $("#listing").scrollTop()) {
+					$("#listing").scrollTop(Math.max(top - $("#listing").height()/2, 0));
+				}
 			}
 			
 			
@@ -231,6 +238,21 @@
 						div.removeClass("changed");
 					div.html(val);
 				}
+			}
+			
+			function updateMemoryWindow() {
+				var startOffset = 0; //
+				
+				var memHtml = "";
+				for(var i = 0; i < 64; i++) {
+					memHtml += "<div class=\"memory_offset\">" + Utils.hex2(startOffset + i*8) + "</div>";
+					memHtml += "<div class=\"memory_line\">"
+					for(var j = 0; j < 8; j++) {
+						memHtml += Utils.hex2(emulator.RAM[startOffset + i*8 + j] || 0) + " ";
+					}
+					memHtml += "</div><div class=\"clear\"></div>";
+				}
+				$("#memory").html(memHtml);
 			}
 		</script>
 	</head>

@@ -83,6 +83,22 @@ textarea {
 	line-height: 14px;
 	cursor: pointer;
 }
+
+#memory {
+	min-width: 500px;
+}
+
+.memory_offset {
+	color: #777777;
+	float: left; 
+	width: 62px;
+}
+
+.memory_line {
+	float: left;
+	white-space: nowrap;	
+}
+
 .breakpoint {
 	background: #971200;
 	color: #aaaaaa !important;
