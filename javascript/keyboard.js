@@ -11,11 +11,14 @@ function Keyboard(_emulator) {
 	this.downKeys = {};
 	
 	var _this = this;
-	document.body.onkeydown = function(event) { _this.keyDown(event); }
-	document.body.onkeyup = function(event)  { _this.keyUp(event); }
+	document.body.onkeydown = function(event) { _this.keyDown(event);  }
+	document.body.onkeyup = function(event)  { _this.keyUp(event);  }
 }
 
 Keyboard.prototype.keyDown = function(event) {
+	if(this.emulator.paused)
+		return;
+		
 	var code = this.convert(event.keyCode);
 	this.downKeys[""+code] = true;
 	
@@ -90,7 +93,8 @@ Keyboard.prototype.interrupt = function() {
 		case 1:
 			var val = 0;
 			if(this.keys.length > 0)
-				val = this.keys.pop();
+				val = this.keys[0];
+				this.keys.splice(0, 1);
 			this.emulator.Registers.C.set(val);
 			break;
 		
@@ -101,7 +105,8 @@ Keyboard.prototype.interrupt = function() {
 				this.emulator.Registers.C.set(0);
 			break;
 		
-		case 3:
+		case 3: {
+			var bVal = this.emulator.Registers.B.get();
 			if(bVal != 0) {
 				this.interruptsOn = true;
 				this.interruptMessage = bVal;
@@ -110,6 +115,7 @@ Keyboard.prototype.interrupt = function() {
 				this.interruptsOn = false;
 			}
 			break;
+		}
 	}
 	
 };

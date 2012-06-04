@@ -596,6 +596,9 @@ function Emulator() {
 		this.RAM = new Array(0x10000);
 		this.asyncSteps = 1;
 		
+		this.interruptQueueingEnabled = false;
+		this.interruptQueue = [];
+		
 		for(var r in this.Registers) {
 			this.Registers[r].set(0);
 		}
@@ -739,9 +742,6 @@ function Emulator() {
 		
 	};
 	
-	this.interruptQueueingEnabled = false;
-	this.interruptQueue = [];
-	
 	this.processInterrupt = function(message) {
 		if(this.Registers.IA.get() != 0) {
 			this.interruptQueueingEnabled = true;
@@ -755,9 +755,9 @@ function Emulator() {
 	};
 	
 	this.interrupt = function(message) {
-		interruptQueue.push(message);
+		this.interruptQueue.push(message);
 		
-		if(interruptQueue.length > 256) {
+		if(this.interruptQueue.length > 256) {
 			// catch fire?
 			console.warn("DCUP-16 is on fire");
 			throw "Too many interrupts";
@@ -780,8 +780,6 @@ function Emulator() {
 
 // generic device used for unit tests
 function Device(_id, _version, _manufacturer, _emulator) {
-	if(!_emulator.async) throw "Emulator must be in asynchronous mode to use a debugger with it.";
-
 	this.id = _id;
 	this.version = _version;
 	this.manufacturer = _manufacturer;
@@ -791,6 +789,7 @@ Device.prototype.interrupt = function() { };
 
 
 function Debugger(_emulator) {
+	if(!_emulator.async) throw "Emulator must be in asynchronous mode to use a debugger with it.";
 	this.emulator = _emulator;
 	this.breakpoints = {};
 	

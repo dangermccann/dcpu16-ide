@@ -33,6 +33,7 @@ function Monitor(_emulator) {
 	this.zoom = 2;
 	this.memOffset = 0x8000;
 	this.drawInterval = 0;
+	this.refreshCount = 0;
 	
 	var _this = this;
 	this.drawInterval = setInterval(function() { _this.refresh() }, 100);
@@ -45,6 +46,7 @@ function Monitor(_emulator) {
 	this.setBorderColor(this.borderColor);
 	document.body.appendChild(this.canvas);
 	this.context = this.canvas.getContext('2d');
+	this.blinkGlyphsOn = true;
 }
 
 Monitor.prototype.interrupt = function() { 
@@ -96,6 +98,9 @@ Monitor.prototype.drawGlyph = function(x, y, glyph, fg, bg, blink) {
 	this.context.fillStyle =  Utils.makeColor(bg);
 	this.context.fillRect(x * 4 * this.zoom, y * 8 * this.zoom, 4 * this.zoom, 8 * this.zoom);
 	
+	if(blink && !this.blinkGlyphsOn)
+		return;
+	
 	this.context.fillStyle = Utils.makeColor(fg);
 	
 	var cols = [];
@@ -116,6 +121,12 @@ Monitor.prototype.drawGlyph = function(x, y, glyph, fg, bg, blink) {
 }
 
 Monitor.prototype.refresh = function() {
+	this.refreshCount++;
+	if(this.refreshCount > 10) {
+		this.blinkGlyphsOn = !this.blinkGlyphsOn;
+		this.refreshCount = 0;
+	}
+
 	for(var y = 0; y < 12; y++) {
 		for(var x = 0; x < 32; x++) {
 			this.drawCell(x, y, this.emulator.RAM[this.memOffset + x + y*32]);

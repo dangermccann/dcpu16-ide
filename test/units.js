@@ -4,6 +4,7 @@ function units() {
 	
 	test("SET Bad Programs", function() { 
 		var e = new Emulator();
+		e.async = false;
 		
 		raises(function() {
 			e.run([ 0x18 ]);
@@ -35,6 +36,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.A.get(), 2, "Register A set correctly");
@@ -73,6 +75,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.A.get(), -1, "Register A is -1");
@@ -98,6 +101,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.B.get(), 6, "Register B is sum of A and B");
@@ -119,6 +123,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.B.get(), 2, "Register B is difference of B and A");
@@ -139,6 +144,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.B.get(), 8, "Register B is product of B and A");
@@ -159,6 +165,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.B.get(), 0xFFF6, "Register B is product of B and A");
@@ -180,6 +187,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.B.get(), 0x0e, "Register B is quotient of B and A");
@@ -202,6 +210,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.B.get(), 0xFFF2, "Register B is quotient of B and A");
@@ -223,6 +232,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.B.get(), 3, "Register B is result of B % A");
@@ -239,6 +249,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.B.get(), 0xFFF9, "Register B is result of B % A");
@@ -254,6 +265,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.B.get(), 0x4444, "Register B is result of B & A");
@@ -269,6 +281,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.B.get(), 0x7777, "Register B is result of B | A");
@@ -284,6 +297,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.B.get(), 0x2525, "Register B is result of B ^ A");
@@ -299,6 +313,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.B.get(), 0x0FF1, "Register B is result of B >>> A");
@@ -315,6 +330,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.B.get(), 0xFFF1, "Register B is result of B >> A");
@@ -331,6 +347,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.B.get(), 0xF110, "Register B is result of B << A");
@@ -350,6 +367,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.B.get(), 0xffee, "B is 0xffee, instruction was skipped");
@@ -367,6 +385,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.B.get(), 0xffee, "B is 0xffee, instruction was skipped");
@@ -391,6 +410,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.B.get(), 0xffee, "B is 0xffee, instruction was skipped");
@@ -412,6 +432,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.B.get(), 0xffee, "B is 0xffee, instruction was skipped");
@@ -429,6 +450,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.B.get(), 0xffee, "B is 0xffee, instruction was skipped");
@@ -445,6 +467,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.B.get(), 0, "B is 0, instruction was not skipped");
@@ -461,6 +484,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.B.get(), 0x03, "B is 0x03, instruction was skipped");
@@ -477,6 +501,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.B.get(), 0, "B is 0, instruction was not skipped");
@@ -497,6 +522,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.B.get(), 0x0f, "Register B is result of A + B + EX");
@@ -519,6 +545,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.B.get(), 0x07, "Register B is result of B - A + EX");
@@ -538,6 +565,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.A.get(), 0x05, "Register A is set to B");
@@ -558,6 +586,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.A.get(), 0x05, "Register A is set to B");
@@ -581,6 +610,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.A.get(), 0x05, "Register A is set to 5");
@@ -603,6 +633,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.run(program);
 		
 		equal(e.Registers.IA.get(), 0x00, "Register IA is set to 0");
@@ -620,6 +651,7 @@ function units() {
 		];
 		
 		var e = new Emulator();
+		e.async = false;
 		e.devices.push(new Device(0xdeadbeef, 0x21, 0xfeeddeee));
 		e.run(program);
 		

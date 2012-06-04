@@ -4,7 +4,6 @@
 	* order of operations bug
 	* readme
 	* splash screen in emulator
-	* blinking characters
 	* memory window scrolling (and coloration?)
 	* better error messages for assembly exceptions
 	* display CPU cycles when running
@@ -70,6 +69,7 @@
 				emulator = new Emulator();
 				emulator.async = true;
 				emulator.verbose = false;
+				emulator.paused = true;
 				var m = new Monitor(emulator);
 				document.getElementById("monitor").appendChild(m.getDOMElement());
 				
@@ -86,7 +86,8 @@
 					updateDebugger(location);
 				};
 				_debugger.onInstruction = function(location) {
-					updateDebuggerLine();
+					//updateDebuggerLine();
+					//updateRegisterWindow();
 				}
 				
 				
@@ -166,7 +167,7 @@
 			}
 			
 			function stopDebugger() {
-				reset();
+				emulator.reboot();
 			
 				$("#assemble_button").show();
 				$("#debug_button").show();
