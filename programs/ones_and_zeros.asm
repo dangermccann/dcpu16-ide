@@ -14,7 +14,7 @@ SET PC, _L3
 SET Z, [J]
 SET A, Z
 AND A, 1
-JSR _global_print
+JSR _global_printf
 ADD [J], 1
 :_L3
 SET PC, _L2

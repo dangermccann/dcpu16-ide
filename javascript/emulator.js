@@ -28,7 +28,9 @@ function RegisterPlusNextWord(_register) {
 	this.cachedResult = null;
 }
 RegisterPlusNextWord.prototype.getB = RegisterPlusNextWord.prototype.getA = RegisterPlusNextWord.prototype.get = function() { 
-	this.cachedResult = this.register.get() + this.emulator.nextWord();
+	var nw = this.emulator.nextWord();
+	if(nw == 0xffff) nw = -1;	// TODO: why is this like this???? (required for '99 bottles' to work...)
+	this.cachedResult = this.register.get() + nw;
 	return this.emulator.RAM[this.cachedResult] || 0; 
 }
 RegisterPlusNextWord.prototype.set = function(val) { 
@@ -208,7 +210,8 @@ Utils = {
 	},
 	
 	hex2: function(num) {
-		var str = Utils.to16BitSigned(num).toString(16);
+		//var str = Utils.to16BitSigned(num).toString(16);
+		str = (num).toString(16);
 		return "0x" + "0000".substr(str.length) + str;
 	},
 	
@@ -591,6 +594,7 @@ function Emulator() {
 		this.PC.set(0);
 		this.CPU_CYCLE = 0;
 		this.RAM = new Array(0x10000);
+		this.asyncSteps = 1;
 		
 		for(var r in this.Registers) {
 			this.Registers[r].set(0);
@@ -637,7 +641,6 @@ function Emulator() {
 	};
 	
 	var _this = this;
-	this.asyncSteps = 1;
 	this.paused = false;
 	
 	this.runAsync = function() {
@@ -662,7 +665,7 @@ function Emulator() {
 			}
 		}
 		else {
-			if(_this.attachedDebugger) {
+			if(this.attachedDebugger) {
 				if(this.attachedDebugger.breakpoints[""+this.PC.get()]) {
 					this.paused = true;
 					this.attachedDebugger.onPaused(this.PC.get());
@@ -706,6 +709,9 @@ function Emulator() {
 			);
 		}
 		op.exec(instruction.a, instruction.b);
+		
+		if(this.attachedDebugger)
+			this.attachedDebugger.onInstruction(this.PC.get());
 	};
 	
 	this.nextWord = function() {
@@ -818,5 +824,6 @@ Debugger.prototype.pause = function() {
 // events
 Debugger.prototype.onStep = function(location) { };
 Debugger.prototype.onPaused = function(location) { };
+Debugger.prototype.onInstruction = function(location) { };
 
 

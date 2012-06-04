@@ -35,8 +35,8 @@ textarea {
 	overflow: hidden !important;
 }
 
-#editor textarea {
-	overflow-x: hidden !important;
+.ace_editor {
+	font-size: 14px !important;
 }
 
 .ace_gutter-cell.ace_breakpoint{
@@ -72,31 +72,19 @@ textarea {
     right: 20px;
     top: 39px;
     z-index: 15;
-	background: #874309;
+	background: #3f5526;
+}
+
+.listing_line {
+	white-space: nowrap;
+	height: 14px;
 }
 
 .offset {
 	color: #777777;
-	float: left; 
 	width: 62px;
 	margin-right: 14px;
-	line-height: 14px;
 	cursor: pointer;
-}
-
-#memory {
-	min-width: 500px;
-}
-
-.memory_offset {
-	color: #777777;
-	float: left; 
-	width: 62px;
-}
-
-.memory_line {
-	float: left;
-	white-space: nowrap;	
 }
 
 .breakpoint {
@@ -106,13 +94,9 @@ textarea {
 
 .bytecode {
 	color: #ffffff;
-	float: left; 
 	width: 170px;
-	line-height: 14px;
 }
 .tokens {
-	float: left; 
-	line-height: 14px;
 }
 .clear {
 	clear: both;
@@ -173,5 +157,43 @@ textarea {
 }
 
 .changed {
-	color: #fc4343 !important;
+	color: #9cce64 !important;
 }
+
+.ace_numeric { 
+	color: #0077ff; 
+}
+.ace_hex { 
+	color: #3bd4d4; 
+}
+.ace_string { 
+	color: #007700 !important;
+}
+.ace_library { 
+	color: #6666ff 
+}
+.ace_keyword { 
+	color: #ffffff !important;  
+	font-weight: bold;
+}
+.ace_variable { 
+	color: #fe9fde; 
+}
+
+
+
+#memory {
+	min-width: 500px;
+}
+
+.memory_offset {
+	color: #777777;
+	float: left; 
+	width: 62px;
+}
+
+.memory_line {
+	float: left;
+	white-space: nowrap;	
+}
+

@@ -21,6 +21,9 @@ Keyboard.prototype.keyDown = function(event) {
 	
 	this.keys.push(code);
 	
+	// TODO: some apps seem to assume that key input should go to this magical address...
+	this.emulator.RAM[0x9000] = code;
+	
 	if(this.interruptsOn)
 		this.emulator.interrupt(this.interruptMessage);
 }

@@ -122,7 +122,7 @@ Assembler =  {
 					if(labels != null) {
 						val = labels[token.lexeme.toLowerCase()];
 						
-						if(val == null) this.throwInvalid(lineNumber, token);
+						if(val == null) this.throwInvalid(lineNumber, token, "Undefined label " + token.lexeme);
 					}
 					else val = 0x100; // placeholder -- TODO: what if this gets reduced to a literal next time through?
 				}
@@ -136,7 +136,7 @@ Assembler =  {
 				
 				if(argument.memoryTarget) {
 					if(argument.expressionRegister != null) {
-						if(lastOperator != "+") this.throwInvalid(lineNumber, token);
+						if(lastOperator != "+") this.throwInvalid(lineNumber, token, "The " + lastOperator + " operator can not be used when referencing a register");
 						
 						argument.value = eval("REGISTER_" + argument.expressionRegister) + Values.REGISTER_NEXT_WORD_OFFSET;
 						argument.nextWord = argument.expressionValue;
@@ -418,15 +418,16 @@ function Listing() {
 		
 		for(var i = 0; i < this.lines.length; i++) {
 			var line = this.lines[i];
-			html += "<div class='offset'>" + Utils.hex2(line.offset) + "</div>";
+			html += "<div class='listing_line'>";
+			html += "<span class='offset' id='offset_line_"+i+"'>" + Utils.hex2(line.offset) + "</span>";
 			
-			html += "<div class='tokens'>";
+			html += "<span class='tokens'>";
 			for(var j = 0; j < line.tokens.length; j++) {
 				html += Tokenizer.htmlFormatToken(line.tokens[j]);
 			}
-			html += "</div>";
+			html += "</span>";
 			
-			html += "<div class='clear'></div>";
+			html += "</div>";
 		}
 		
 		return html;
