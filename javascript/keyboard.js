@@ -14,6 +14,7 @@ function Keyboard(_emulator) {
 	document.body.onkeydown = function(event) { _this.keyDown(event);  }
 	document.body.onkeyup = function(event)  { _this.keyUp(event);  }
 }
+Keyboard.prototype.init = function() { }
 
 Keyboard.prototype.keyDown = function(event) {
 	if(this.emulator.paused)

@@ -617,6 +617,10 @@ function Emulator() {
 			this.RAM[i] = this.program[i];
 		}
 		
+		for(var i = 0; i < this.devices.length; i++) {
+			this.devices[i].init();
+		}
+		
 		if(!this.async) {
 			while(this.step()) { }
 			this.exit();
@@ -786,6 +790,7 @@ function Device(_id, _version, _manufacturer, _emulator) {
 	this.emulator = _emulator;
 };
 Device.prototype.interrupt = function() { };
+Device.prototype.init = function() { };
 
 
 function Debugger(_emulator) {

@@ -36,7 +36,7 @@ function Monitor(_emulator) {
 	this.refreshCount = 0;
 	
 	var _this = this;
-	this.drawInterval = setInterval(function() { _this.refresh() }, 100);
+	//this.drawInterval = setInterval(function() { _this.refresh() }, 100);
 	
 	this.canvas = document.createElement("canvas");
 	this.canvas.width = this.zoom * 128;
@@ -47,6 +47,19 @@ function Monitor(_emulator) {
 	document.body.appendChild(this.canvas);
 	this.context = this.canvas.getContext('2d');
 	this.blinkGlyphsOn = true;
+	
+	this.bootScreen = new Image();
+    this.bootScreen.src = "/images/boot-screen.png";
+}
+
+Monitor.prototype.init = function() { 
+	this.disconnect();
+	
+	this.context.drawImage(this.bootScreen, 0, 0, this.canvas.width, this.canvas.height);
+	var _this = this;
+	setTimeout(function() { 
+		_this.drawInterval = setInterval(function() { _this.refresh() }, 100);
+	}, 1000);
 }
 
 Monitor.prototype.interrupt = function() { 
@@ -137,7 +150,6 @@ Monitor.prototype.refresh = function() {
 Monitor.prototype.disconnect = function() {
 	this.context.fillStyle = "#777777";
 	this.context.fillRect(0, 0, 128, 96);
-	this.memOffset = 0;
 	if(this.drawInterval != 0)
 		clearInterval(this.drawInterval);
 	this.drawInterval = 0;

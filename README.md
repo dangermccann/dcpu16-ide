@@ -7,7 +7,6 @@ TODO
 * order of operations bug
 * remember breakpoints when switching between editor and debugger
 * about box
-* splash screen in emulator
 * memory window scrolling (and coloration?)
 * better error messages for assembly exceptions
 * display CPU cycles when running

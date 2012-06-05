@@ -39,6 +39,7 @@ Clock.prototype.interrupt = function() {
 	
 };
 
+Clock.prototype.init = function() { }
 Clock.prototype.start = function(duration) { 
 	this.stop();
 	this.elapsed = 0;
