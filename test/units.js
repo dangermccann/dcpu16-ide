@@ -702,6 +702,60 @@ function units() {
 	
 	module("Assembler Module");
 	
+	test("Expression Evaluaton Test", function() { 
+		var input, result;
+		
+		input =  "1 + 1";
+		result = Assembler.evaluateExpression(Tokenizer.tokenize(input).lines[0], 0, 1);
+		equal(result[0].lexeme, 2);
+		
+		input =  "2 + 2 * 5";
+		result = Assembler.evaluateExpression(Tokenizer.tokenize(input).lines[0], 0, 1);
+		equal(result[0].lexeme, 12);
+		
+		input =  "25 - 2 - 5 + 3 * 3";
+		result = Assembler.evaluateExpression(Tokenizer.tokenize(input).lines[0], 0, 1);
+		equal(result[0].lexeme, 27);
+		
+		input =  "25 / 5 + 4*2";
+		result = Assembler.evaluateExpression(Tokenizer.tokenize(input).lines[0], 0, 1);
+		equal(result[0].lexeme, 13);
+		
+		input =  "199 % 17";
+		result = Assembler.evaluateExpression(Tokenizer.tokenize(input).lines[0], 0, 1);
+		equal(result[0].lexeme, 12);
+		
+		input =  "3 * (14-2) * 2";
+		result = Assembler.evaluateExpression(Tokenizer.tokenize(input).lines[0], 0, 1);
+		equal(result[0].lexeme, 72);
+		
+		input =  "2 * (6 + 3 + (5%3+1))";
+		result = Assembler.evaluateExpression(Tokenizer.tokenize(input).lines[0], 0, 1);
+		equal(result[0].lexeme, 24);
+		
+		input =  "0x10 | 0x01";
+		result = Assembler.evaluateExpression(Tokenizer.tokenize(input).lines[0], 0, 1);
+		equal(result[0].lexeme, 0x11);
+		
+		input =  "0xee & 0x77";
+		result = Assembler.evaluateExpression(Tokenizer.tokenize(input).lines[0], 0, 1);
+		equal(result[0].lexeme, 0x66);
+		
+		input =  "0xee ^ 0x77";
+		result = Assembler.evaluateExpression(Tokenizer.tokenize(input).lines[0], 0, 1);
+		equal(result[0].lexeme, 0x99);
+		
+		input =  "0xee >> 3";
+		result = Assembler.evaluateExpression(Tokenizer.tokenize(input).lines[0], 0, 1);
+		equal(result[0].lexeme, 0x1D);
+		
+		input =  "0xee << 3";
+		result = Assembler.evaluateExpression(Tokenizer.tokenize(input).lines[0], 0, 1);
+		equal(result[0].lexeme, 0x770);
+	});
+	
+	
+	
 	test("Assembly Test 1", function() { 
 		var input = "; test app #1\n" + 
 					 "SET A, B\n" + 

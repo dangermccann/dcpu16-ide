@@ -231,7 +231,12 @@ Utils = {
 
 };
 
-
+/**
+ * Emulator constructor.
+ *
+ * @constructor
+ * @this {Emulator}
+ */
 function Emulator() { 
 
 	this.async = true;
@@ -607,6 +612,10 @@ function Emulator() {
 	
 	this.reboot= function() { this.boot(); };
 
+	/**
+	 * Run the program specified.  
+	 * @ _program the program you want to run, as an array of bytes.
+	 */
 	this.run = function(_program) {
 		this.program = _program;
 		
@@ -803,12 +812,12 @@ function Debugger(_emulator) {
 Debugger.prototype.getBreakpoints = function() {
 	return this.breakpoints;
 };
-Debugger.prototype.toggleBreakpoint = function(location) {
+Debugger.prototype.toggleBreakpoint = function(location, lineNumber) {
 	location += "";	// convert to string
 	if(this.breakpoints[location])
 		delete this.breakpoints[location];
 	else
-		this.breakpoints[location] = location;
+		this.breakpoints[location] = lineNumber;
 };
 Debugger.prototype.run = function() { 
 	if(this.emulator.paused) {

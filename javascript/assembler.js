@@ -15,7 +15,8 @@ Tokenizer = {
 		{ pattern: /^(\[)/,							type: "open_bracket"	},
 		{ pattern: /^(\])/,							type: "close_bracket"	},		
 		{ pattern: /^(,)/,							type: "comma"			},
-		{ pattern: /^(\+|\-|\*)/,					type: "operator"		},
+		{ pattern: /^(\+|\-|\*|\/|%|\(|\)|\&|\||\^|>>|<<)/,		
+													type: "operator"		},
 		{ pattern: /^([\s]+)/,						type: "space" 			},
 	],
 	
@@ -89,6 +90,14 @@ Tokenizer = {
 	htmlFormatToken: function(token) {
 		var str = token.lexeme.replace(/ /g, "&nbsp;");
 		return "<span class='" + token.type + "'>" + str + "</span>";
+	},
+	
+	logTokens: function(tokens, start) {
+		var str = "";
+		for(var l = start; l < tokens.length; l++) {
+			str += tokens[l].lexeme;
+		}
+		console.log(str);
 	}
 }
 
@@ -102,11 +111,88 @@ function AssemblerArgument() {
 }
 
 Assembler =  {
+	getLabelValue: function(token, labels) {
+		if(labels != null) {
+			var labelVal = labels[token.lexeme.toLowerCase()];
+			if(labelVal == null) this.throwInvalid(lineNumber, token, "Undefined label " + token.lexeme);
+			return labelVal;
+		}
+		else return 0x100; // placeholder -- TODO: what if this gets reduced to a literal next time through?
+		
+	},
+
+	evaluateExpression: function(tokens, start, lineNumber, labels) {
+		var k;
+		var expressionStr = "";
+		var expressionStart = -1, expressionEnd = 0xffffff;
+		
+		
+		// build string representation of the expression.  only works if all operands are literals
+		for(k = start; k < tokens.length; k++) {
+			var token = tokens[k];
+			
+			if(token.type === "space") { }
+			else if(token.type == "comma" || token.type == "comment") { 
+				break;
+			}
+			else if(token.type === "operator") {
+				expressionStr += token.lexeme;
+			}
+			else if(token.type === "label_ref") {
+				expressionStr += this.getLabelValue(token, labels);
+				if(expressionStart === -1)
+					expressionStart = k;
+				expressionEnd = k;
+			}
+			else if(token.type === "decimal" || token.type === "hexidecimal" ) {
+				expressionStr += parseInt(token.lexeme);
+				
+				if(expressionStart === -1)
+					expressionStart = k;
+				expressionEnd = k;
+			}
+			else if(token.type === "register") {
+				expressionStr = "";	// can't evalute expressions containing variables
+				break;
+			}
+		}
+		
+		if(expressionStr.length > 0 && expressionStart != expressionEnd) {
+			// check for operator at end of expression
+			if(tokens[expressionEnd].type === "operator") this.throwInvalid(lineNumber, null, "Invalid expression near " + tokens[expressionStart].lexeme);
+		
+			// duplicate token array so we can modify it
+			var dupe = [];
+			for(k = 0; k < tokens.length; k++) {
+				dupe.push(tokens[k]);
+			}
+			tokens = dupe;
+		
+			// evaluate the expression
+			var expressionResult;
+			try {
+				expressionResult = eval(expressionStr) & 0xffff;
+			}
+			catch(e) {
+				this.throwInvalid(lineNumber, null, "Invalid expression near " + tokens[expressionStart].lexeme);
+			}
+			
+			// put the result back in the token array as a numeric literal
+			var newToken = { lexeme: expressionResult, type: "decimal" };
+			tokens.splice(expressionStart, expressionEnd-expressionStart+1, newToken);
+		}
+		return tokens;
+	},
+
 	compileArgument: function(tokens, start, lineNumber, labels) {
 		var argument = new AssemblerArgument();
 		var k;
 		var openBracketCount = 0, closeBracketCount = 0;
 		var lastOperator = null;
+		var originalLength = tokens.length;
+		
+		tokens = this.evaluateExpression(tokens, start, lineNumber, labels);
+		
 		for(k = start; k < tokens.length; k++) {
 			var token = tokens[k];
 			
@@ -119,18 +205,12 @@ Assembler =  {
 				
 				var val;
 				if(token.type == "label_ref") {
-					if(labels != null) {
-						val = labels[token.lexeme.toLowerCase()];
-						
-						if(val == null) this.throwInvalid(lineNumber, token, "Undefined label " + token.lexeme);
-					}
-					else val = 0x100; // placeholder -- TODO: what if this gets reduced to a literal next time through?
+					val = this.getLabelValue(token, labels);
 				}
 				else val = parseInt(token.lexeme);
 				
 				if(lastOperator != null && argument.expressionValue != null) {
-					argument.expressionValue = eval(""+argument.expressionValue + lastOperator + val);
-					lastOperator = null;
+					this.throwInvalid(lineNumber, token);
 				}
 				else argument.expressionValue = val;
 				
@@ -205,7 +285,7 @@ Assembler =  {
 		
 		if(openBracketCount != closeBracketCount) this.throwInvalid(lineNumber, null, "Mismatched brackets");
 		
-		argument.tokenCount = k - start;
+		argument.tokenCount = k - start + (originalLength - tokens.length);
 		return argument;
 	},
 	

@@ -5,6 +5,9 @@ body {
 	margin: 0px; 
 	padding: 0px;
 }
+.right {
+	float: right;
+}
 
 #toolbar {
 	padding: 3px;
@@ -195,5 +198,9 @@ textarea {
 .memory_line {
 	float: left;
 	white-space: nowrap;	
+}
+
+#about_dialog {
+	text-align: center;
 }
 
