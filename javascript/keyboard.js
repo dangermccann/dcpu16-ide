@@ -22,11 +22,12 @@ Keyboard.prototype.keyDown = function(event) {
 		
 	var code = this.convert(event.keyCode);
 	this.downKeys[""+code] = true;
+
+	// TODO: some apps seem to assume that key input should go to this magical address...
+	this.emulator.RAM[0x9000 + this.keys.length % 0xf] = code;
 	
 	this.keys.push(code);
 	
-	// TODO: some apps seem to assume that key input should go to this magical address...
-	this.emulator.RAM[0x9000] = code;
 	
 	if(this.interruptsOn)
 		this.emulator.interrupt(this.interruptMessage);

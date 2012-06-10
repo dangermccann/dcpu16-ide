@@ -111,7 +111,7 @@ function AssemblerArgument() {
 }
 
 Assembler =  {
-	getLabelValue: function(token, labels) {
+	getLabelValue: function(token, labels, lineNumber) {
 		if(labels != null) {
 			var labelVal = labels[token.lexeme.toLowerCase()];
 			if(labelVal == null) this.throwInvalid(lineNumber, token, "Undefined label " + token.lexeme);
@@ -139,7 +139,7 @@ Assembler =  {
 				expressionStr += token.lexeme;
 			}
 			else if(token.type === "label_ref") {
-				expressionStr += this.getLabelValue(token, labels);
+				expressionStr += this.getLabelValue(token, labels, lineNumber);
 				if(expressionStart === -1)
 					expressionStart = k;
 				expressionEnd = k;
@@ -216,6 +216,7 @@ Assembler =  {
 				
 				if(argument.memoryTarget) {
 					if(argument.expressionRegister != null) {
+						if(lastOperator == null) this.throwInvalid(lineNumber, token, "Missing operator");
 						if(lastOperator != "+") this.throwInvalid(lineNumber, token, "The " + lastOperator + " operator can not be used when referencing a register");
 						
 						argument.value = eval("REGISTER_" + argument.expressionRegister) + Values.REGISTER_NEXT_WORD_OFFSET;
@@ -228,6 +229,8 @@ Assembler =  {
 					}
 				}
 				else {
+					if(argument.expressionRegister != null && lastOperator != null) this.throwInvalid(lineNumber, token, "Expressions can not contain registers unless using 'register plus next word'.");
+				
 					// literal
 					var val32 = Utils.to32BitSigned(argument.expressionValue);
 					if(val32 >= -1 && val32 <= 30 && token.type != "label_ref") {
@@ -316,7 +319,10 @@ Assembler =  {
 							offset++;
 						}
 						else if(token.type == "label_def") {
-							labels[token.lexeme.substr(1).toLowerCase()] = offset;
+							var labelName = token.lexeme.substr(1).toLowerCase();
+							if(labels[labelName] != null) this.throwInvalid(j, token, "Duplicate label definition (" + labelName + ")");
+							
+							labels[labelName] = offset;
 						}
 						else if(token.type == "reserved_word" && token.lexeme == "DAT") {
 							dat = token;

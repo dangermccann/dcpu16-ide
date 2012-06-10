@@ -8,6 +8,9 @@ body {
 .right {
 	float: right;
 }
+.left {
+	float: left;
+}
 
 #toolbar {
 	padding: 3px;
@@ -157,6 +160,11 @@ textarea {
 .register-value {
 	float: left;
 	color: #ffffff;
+	padding-right: 16px;
+}
+
+.register-memory-value {
+	cursor: pointer;
 }
 
 .changed {
@@ -185,8 +193,12 @@ textarea {
 
 
 
+
 #memory {
 	min-width: 500px;
+	position: absolute;
+	top: 4px;
+	left: 4px;
 }
 
 .memory_offset {

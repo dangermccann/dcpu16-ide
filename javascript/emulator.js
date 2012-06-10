@@ -596,6 +596,7 @@ function Emulator() {
 	this.boot= function() {
 		console.log("--- DCPU-16 Emulator ---");
 	
+		this.program =  null;
 		this.PC.set(0);
 		this.CPU_CYCLE = 0;
 		this.RAM = new Array(0x10000);
@@ -608,6 +609,10 @@ function Emulator() {
 			this.Registers[r].set(0);
 		}
 		this.Registers.SP.set(0xffff);
+		
+		for(var i = 0; i < this.devices.length; i++) {
+			this.devices[i].init();
+		}
 	};
 	
 	this.reboot= function() { this.boot(); };
@@ -624,10 +629,6 @@ function Emulator() {
 		// load program into RAM
 		for(var i = 0; i < this.program.length; i++) {
 			this.RAM[i] = this.program[i];
-		}
-		
-		for(var i = 0; i < this.devices.length; i++) {
-			this.devices[i].init();
 		}
 		
 		if(!this.async) {
@@ -663,7 +664,7 @@ function Emulator() {
 		while(true) {
 			if(Math.floor(_this.CPU_CYCLE / 1000) > _this.asyncSteps) {
 				_this.asyncSteps++;
-				setTimeout(_this.runAsync, 1);
+				setTimeout(_this.runAsync, 8);
 				break;
 			}
 			else {
@@ -674,6 +675,9 @@ function Emulator() {
 	}
 	
 	this.stepAsync = function() {
+		if(this.program == null)	// break if we have rebooted
+			return false;
+		
 		if(this.paused) {
 			if(this.attachedDebugger) {
 				this.attachedDebugger.onPaused(this.PC.get());

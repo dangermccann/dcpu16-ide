@@ -54,6 +54,8 @@ function Monitor(_emulator) {
 
 Monitor.prototype.init = function() { 
 	this.disconnect();
+	this.refreshCount = 0;
+	this.memOffset = 0x8000;
 	
 	this.context.drawImage(this.bootScreen, 0, 0, this.canvas.width, this.canvas.height);
 	var _this = this;

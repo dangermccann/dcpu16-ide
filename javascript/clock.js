@@ -43,7 +43,8 @@ Clock.prototype.init = function() { }
 Clock.prototype.start = function(duration) { 
 	this.stop();
 	this.elapsed = 0;
-	this.interval = setInterval(this.tick, duration);
+	var _this = this;
+	this.interval = setInterval(function() { _this.tick() }, duration);
 }
 
 Clock.prototype.stop = function() {

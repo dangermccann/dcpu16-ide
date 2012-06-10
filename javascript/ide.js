@@ -2,6 +2,7 @@ var listing;
 var emulator;
 var editor;
 var _debugger;
+var LINE_HEIGHT = 14;
 
 $(document).ready(function(){	
 	init();
@@ -28,6 +29,11 @@ function init() {
 	});
 	
 	$("#listing").scroll(updateDebuggerLine);
+	$("#memory_container").scroll(updateMemoryWindow);
+	
+	$(".register-memory-value").click(function() { 
+		gotoMemoryLocation(parseInt($(this).html()));
+	});
 	
 
 	editor = ace.edit("editor");
@@ -66,24 +72,24 @@ function init() {
 	
 	emulator.devices.push(m);
 	emulator.devices.push(new Keyboard(emulator));
+	emulator.devices.push(new Clock(emulator));
 	
 	_debugger = new Debugger(emulator);
 	_debugger.onStep = function(location) {
-		console.log("onStep");
 		updateDebugger(location);
 	};
 	_debugger.onPaused = function(location) {
-		console.log("onPaused");
 		updateDebugger(location);
 	};
 	_debugger.onInstruction = function(location) {
-		//updateDebuggerLine();
-		//updateRegisterWindow();
+		
 	}
+	
+	setInterval(realtimeUpdate, 50);
 	
 	
 	$.ajax({
-		url: 			"/programs/tetris.asm",
+		url: 			"/programs/diagnostics.asm",
 		context:		this,
 		dataType: 		"text",
 		success: 		function(data) { 
@@ -201,25 +207,36 @@ function reset() {
 
 
 function updateDebugger() {
-	console.log("updateDebugger");
+	//console.log("updateDebugger");
 	if(emulator.paused) {
 		$("#debugger_line").show();
 		
 		ensureDebuggerLineVisible();
 		updateDebuggerLine();
-		
 		updateRegisterWindow();
 		updateMemoryWindow();
+		updateCycles();
 		
 		$("#pause_button").hide();
 		$("#step_button").show();
 		$("#run_button").show();
 	}
 	else {
+		//$("#debugger_line").hide();
 		$("#pause_button").show();
 		$("#step_button").hide();
 		$("#run_button").hide();
 	}
+}
+
+function realtimeUpdate() {
+	if(!listing)  return;
+	if(emulator.paused) return;
+		
+	updateDebuggerLine();
+	updateRegisterWindow();
+	updateMemoryWindow();
+	updateCycles();
 }
 
 function calculateDebuggerLine() {
@@ -242,19 +259,18 @@ function calculateDebuggerLine() {
 }
 
 function getDebuggerLineTop(line) {
-	var lineHeight= 14;
-	return line*lineHeight + $("#listing").position().top + 2;
+	return line*LINE_HEIGHT + $("#listing").position().top + 2;
 }
 
 function updateDebuggerLine() {
-	var top = getDebuggerLineTop(calculateDebuggerLine()) - $("#listing").scrollTop()
+	var top = getDebuggerLineTop(calculateDebuggerLine()) - $("#listing").scrollTop();
 	$("#debugger_line").css("top", top + "px");
 }
 
 function ensureDebuggerLineVisible() {
 	var top = getDebuggerLineTop(calculateDebuggerLine());
-	console.log("ensureDebuggerLineVisible | current: " + $("#listing").scrollTop() + " | dest: " + top);
-	if(top > $("#listing").scrollTop() + $("#listing").height() - 14 || top < $("#listing").scrollTop()) {
+	//console.log("ensureDebuggerLineVisible | current: " + $("#listing").scrollTop() + " | dest: " + top);
+	if(top > $("#listing").scrollTop() + $("#listing").height() - LINE_HEIGHT || top < $("#listing").scrollTop()) {
 		$("#listing").scrollTop(Math.max(top - $("#listing").height()/2, 0));
 	}
 }
@@ -263,23 +279,33 @@ function ensureDebuggerLineVisible() {
 function updateRegisterWindow() {
 	for(var reg in emulator.Registers) {
 		var val = Utils.hex2(emulator.Registers[reg].get());
-		val += "&nbsp;&nbsp;"
-		val += "[" + Utils.hex2(emulator.RAM[emulator.Registers[reg].get()] || 0) + "]";
+		var memoryVal = Utils.hex2(emulator.RAM[emulator.Registers[reg].get()] || 0);
 		
 		var div = $("#register-" + reg).find(".register-value");
-		if(div.html() != val)
+		if(div.html() != val) {
 			div.addClass("changed");
+			div.html(val);
+		}
 		else
 			div.removeClass("changed");
-		div.html(val);
+			
+		div = $("#register-" + reg).find(".register-memory-value");
+		if(div.html() != memoryVal) {
+			div.addClass("changed");
+			div.html(memoryVal);
+		}
+		else
+			div.removeClass("changed");
 	}
 }
 
 function updateMemoryWindow() {
-	var startOffset = 0; //
+	
+	var startOffset = Math.floor($("#memory_container").scrollTop() / LINE_HEIGHT) * 8;
+	startOffset = Math.min(startOffset, 0xffb0);
 	
 	var memHtml = "";
-	for(var i = 0; i < 64; i++) {
+	for(var i = 0; i < 10; i++) {
 		memHtml += "<div class=\"memory_offset\">" + Utils.hex2(startOffset + i*8) + "</div>";
 		memHtml += "<div class=\"memory_line\">"
 		for(var j = 0; j < 8; j++) {
@@ -288,6 +314,30 @@ function updateMemoryWindow() {
 		memHtml += "</div><div class=\"clear\"></div>";
 	}
 	$("#memory").html(memHtml);
+	$("#memory").css("top", ($("#memory_container").scrollTop() + 4) + "px");
+}
+
+function gotoMemoryLocation(location) {
+	$("#memory_container").scrollTop(Math.floor(location / 8) * LINE_HEIGHT);
+	updateMemoryWindow();
+}
+
+lastCycleUpdate = { time: 0, cycle: 0 };
+function updateCycles() {
+	var val = "";
+	
+	if(emulator.CPU_CYCLE > 0) {
+		val = emulator.CPU_CYCLE;
+		if(!emulator.paused) {
+			var now = (new Date()).getTime();
+			var speed = (emulator.CPU_CYCLE - lastCycleUpdate.cycle) / (now - lastCycleUpdate.time);
+			lastCycleUpdate.time = now;
+			lastCycleUpdate.cycle = emulator.CPU_CYCLE;
+			val = Math.round(speed) + " MHz | " + val;
+		}
+	}
+	
+	$("#cycles").html(val);
 }
 
 function about() {

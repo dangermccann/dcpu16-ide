@@ -33,6 +33,7 @@
 			<div class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right:0px; height:255px; top: 50px;">
 				<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
 					<span class="ui-dialog-title">Emulator</span>
+					<div class="right" id="cycles" style="margin-top: 2px"></div>
 				</div>
 				<div style="height: auto; width: auto;" class="ui-dialog-content ui-widget-content">
 					<div id="monitor"></div>
@@ -79,7 +80,10 @@
 					<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
 					  <span class="ui-dialog-title">Memory</span>
 					</div>
-					<div id="memory" class="dialog_contents ui-dialog-content ui-widget-content scrolling_contents"></div>
+					<div id="memory_container" class="dialog_contents ui-dialog-content ui-widget-content scrolling_contents">
+						<div style="height: 114674px;"></div>
+						<div id="memory"></div>
+					</div>
 				</div>
 				
 				<div id="registers-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right:0px; width: 300px; bottom: 0px; top: 310px;">
@@ -89,62 +93,98 @@
 					<div id="registers" class="ui-dialog-content ui-widget-content dialog_contents scrolling_contents">
 						<div id="register-A">
 							<div class="register-name">A:</div>
-							<div class="register-value">0x0000</div>
+							<div class="left">
+								<span class="register-value">0x0000</span>
+								[<span class="register-memory-value">0x0000</span>]
+							</div>
 							<div class="clear"></div>
 						</div>
 						<div id="register-B">
 							<div class="register-name">B:</div>
-							<div class="register-value">0x0000</div>
+							<div class="left">
+								<span class="register-value">0x0000</span>
+								[<span class="register-memory-value">0x0000</span>]
+							</div>
 							<div class="clear"></div>
 						</div>
 						<div id="register-C">
 							<div class="register-name">C:</div>
-							<div class="register-value">0x0000</div>
+							<div class="left">
+								<span class="register-value">0x0000</span>
+								[<span class="register-memory-value">0x0000</span>]
+							</div>
 							<div class="clear"></div>
 						</div>
 						<div id="register-X">
 							<div class="register-name">X:</div>
-							<div class="register-value">0x0000</div>
+							<div class="left">
+								<span class="register-value">0x0000</span>
+								[<span class="register-memory-value">0x0000</span>]
+							</div>
 							<div class="clear"></div>
 						</div>
 						<div id="register-Y">
 							<div class="register-name">Y:</div>
-							<div class="register-value">0x0000</div>
+							<div class="left">
+								<span class="register-value">0x0000</span>
+								[<span class="register-memory-value">0x0000</span>]
+							</div>
 							<div class="clear"></div>
 						</div>
 						<div id="register-Z">
 							<div class="register-name">Z:</div>
-							<div class="register-value">0x0000</div>
+							<div class="left">
+								<span class="register-value">0x0000</span>
+								[<span class="register-memory-value">0x0000</span>]
+							</div>
 							<div class="clear"></div>
 						</div>
 						<div id="register-I">
 							<div class="register-name">I:</div>
-							<div class="register-value">0x0000</div>
+							<div class="left">
+								<span class="register-value">0x0000</span>
+								[<span class="register-memory-value">0x0000</span>]
+							</div>
 							<div class="clear"></div>
 						</div>
 						<div id="register-J">
 							<div class="register-name">J:</div>
-							<div class="register-value">0x0000</div>
+							<div class="left">
+								<span class="register-value">0x0000</span>
+								[<span class="register-memory-value">0x0000</span>]
+							</div>
 							<div class="clear"></div>
 						</div>
 						<div id="register-SP">
 							<div class="register-name">SP:</div>
-							<div class="register-value">0x0000</div>
+							<div class="left">
+								<span class="register-value">0x0000</span>
+								[<span class="register-memory-value">0x0000</span>]
+							</div>
 							<div class="clear"></div>
 						</div>
 						<div id="register-PC">
 							<div class="register-name">PC:</div>
-							<div class="register-value">0x0000</div>
+							<div class="left">
+								<span class="register-value">0x0000</span>
+								[<span class="register-memory-value">0x0000</span>]
+							</div>
 							<div class="clear"></div>
 						</div>
 						<div id="register-EX">
 							<div class="register-name">EX:</div>
-							<div class="register-value">0x0000</div>
+							<div class="left">
+								<span class="register-value">0x0000</span>
+								[<span class="register-memory-value">0x0000</span>]
+							</div>
 							<div class="clear"></div>
 						</div>
 						<div id="register-IA">
 							<div class="register-name">IA:</div>
-							<div class="register-value">0x0000</div>
+							<div class="left">
+								<span class="register-value">0x0000</span>
+								[<span class="register-memory-value">0x0000</span>]
+							</div>
 							<div class="clear"></div>
 						</div>
 					</div>
