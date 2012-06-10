@@ -216,3 +216,23 @@ textarea {
 	text-align: center;
 }
 
+#selectable_file_list .ui-selecting { 
+	background: #dbffb0; 
+	color: black; 
+}
+#selectable_file_list .ui-selected { 
+	background: #9fda58; 
+	color: black; 
+}
+#selectable_file_list { 
+	list-style-type: none; 
+	margin: 0; 
+	padding: 0; 
+	cursor: pointer;
+}
+#selectable_file_list li { 
+	margin: 3px; 
+	padding: 0.4em; 
+	height: 14px; 
+}
+

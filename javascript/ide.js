@@ -3,6 +3,7 @@ var emulator;
 var editor;
 var _debugger;
 var LINE_HEIGHT = 14;
+var userData;
 
 $(document).ready(function(){	
 	init();
@@ -10,8 +11,10 @@ $(document).ready(function(){
 });
 
 function init() {
-	$("#assemble_button").button({ icons: { primary: "ui-icon-link" } });
-	$("#debug_button").button({ icons: { primary: "ui-icon-radio-on" } });
+	$("#debug_button").button({ icons: { primary: "ui-icon-play" } });
+	$("#save_button").button({ icons: { primary: "ui-icon-disk" } });
+	$("#open_button").button({ icons: { primary: "ui-icon-folder-open" } });
+	$("#new_button").button({ icons: { primary: "ui-icon-document" } });
 	
 	$("#run_button").button({ icons: { primary: "ui-icon-play" } }).hide();
 	$("#step_button").button({ icons: { primary: "ui-icon-arrowreturnthick-1-e" } }).hide();
@@ -25,8 +28,45 @@ function init() {
 		autoOpen: false, 
 		resizable: false,
 		minWidth: 350,
-		buttons: { "Ok": function() { $(this).dialog("close"); } } 
+		buttons: { "Ok": function() { $(this).dialog("close"); editor.focus(); } } 
 	});
+	
+	$("#save_dialog").dialog({ 
+		modal: true, 
+		autoOpen: false, 
+		resizable: false,
+		minWidth: 300,
+		buttons: { 
+			"Ok": function() {  
+				doSave($("#file_name").val());
+				$(this).dialog("close"); 
+				editor.focus();
+			},
+			"Cancel": function() { $(this).dialog("close"); editor.focus(); }
+		} 
+	});
+	
+	$("#open_dialog").dialog({ 
+		modal: true, 
+		autoOpen: false, 
+		resizable: false,
+		minWidth: 400,
+		buttons: { 
+			"Ok": function() {  
+				openFile($("#selectable_file_list").data("selected"));
+				persist();
+				$(this).dialog("close"); 
+				editor.focus();
+			},
+			"Cancel": function() { $(this).dialog("close"); editor.focus(); }
+		} 
+	});
+	$("#selectable_file_list").selectable({
+		selected: function(event, ui) { 
+			$("#selectable_file_list").data("selected", event.srcElement.innerHTML);
+		}
+	});
+	
 	
 	$("#listing").scroll(updateDebuggerLine);
 	$("#memory_container").scroll(updateMemoryWindow);
@@ -87,19 +127,103 @@ function init() {
 	
 	setInterval(realtimeUpdate, 50);
 	
+	// load userData
+	//clearUserData();
+	var data = localStorage.getItem('userData');
+	if(data != null && data.length > 0) {
+		userData = JSON.parse(data);
+	}
+	if(userData == null) {
+		userData = { 
+			fileSaved: false,
+			files: { },
+			last: null
+		};
+	}
 	
-	$.ajax({
-		url: 			"/programs/diagnostics.asm",
-		context:		this,
-		dataType: 		"text",
-		success: 		function(data) { 
-			editor.getSession().setValue(data);
-		}
-	});
+	// load default file if we couldn't fine one to open
+	if(userData.last == null || !openFile(userData.last)) {
+		$.ajax({
+			url: 			"/programs/diagnostics.asm",
+			context:		this,
+			dataType: 		"text",
+			success: 		function(data) { 
+				editor.getSession().setValue(data);
+			}
+		});
+	}
+	
+	
+	editor.focus();
 	
 	
 	//$("#source-dialog").resizable( { autoHide: true, handles: "s" });
 	//$("#assembly-dialog").resizable( { autoHide: true, handles: "n" });
+}
+
+function save() {
+	if(!userData.fileSaved)
+		$("#save_dialog").dialog("open");
+	else {
+		doSave(userData.last);
+		editor.focus();
+	}
+}
+
+function doSave(filename) {
+	if(filename == null || filename.length == 0)
+		return;
+	userData.last = filename;
+	userData.fileSaved = true;
+	userData.files[filename] = editor.getSession().getValue();
+	$("#editor_file_name").html(filename);
+	
+	persist();
+}
+
+function persist() {
+	localStorage.setItem('userData', JSON.stringify(userData));
+}
+
+function _open() {
+	var str = "";
+	for(var f in userData.files) {
+		str += "<li class='ui-widget-content'>" + f + "</li>";
+	}
+	if(str.length == 0)
+		str = "Nothing to open.  You haven't saved any files yet!";
+	$("#selectable_file_list").html(str);
+	$("#selectable_file_list").data("selected", null);
+	
+	$("#open_dialog").dialog("open");
+}
+
+function openFile(filename) {
+	if(filename == null || filename.length == 0)
+		return false;
+	
+	var f = userData.files[filename];
+	if(f) {
+		userData.last = filename;
+		userData.fileSaved = true;
+		editor.getSession().setValue(f);
+		$("#editor_file_name").html(filename);
+	}
+		
+	return (f != null);
+}
+
+function _new() {
+	userData.fileSaved = false;
+	userData.last = null;
+	editor.getSession().setValue("");
+	$("#editor_file_name").html("Source");
+	
+	editor.focus();
+}
+
+function clearUserData() {
+	localStorage.setItem('userData', null);
 }
 
 function assemble() {
@@ -135,8 +259,13 @@ function gotoLine(line) {
 }
 
 function startDebugger() {
-	$("#assemble_button").hide();
+	if(userData.fileSaved)
+		save();
+
 	$("#debug_button").hide();
+	$("#save_button").hide();
+	$("#open_button").hide();
+	$("#new_button").hide();
 
 	$("#run_button").show();
 	$("#step_button").show();
@@ -173,8 +302,10 @@ function startDebugger() {
 function stopDebugger() {
 	emulator.reboot();
 
-	$("#assemble_button").show();
 	$("#debug_button").show();
+	$("#save_button").show();
+	$("#open_button").show();
+	$("#new_button").show();
 
 	$("#run_button").hide();
 	$("#step_button").hide();
@@ -184,6 +315,8 @@ function stopDebugger() {
 	
 	$("#editing_windows").show();
 	$("#debugging_windows").hide();
+	
+	editor.focus();
 }
 
 function pauseDebugger() {

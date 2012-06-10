@@ -15,16 +15,32 @@
 		<script type="text/javascript" src="javascript/ace/theme-monokai.js" charset="utf-8"></script>
 		<script type="text/javascript" src="javascript/ace/mode-dcpu16.js" charset="utf-8"></script>
 		<script type="text/javascript" src="javascript/ide.js"></script>
+		<script type="text/javascript">
+		  var _gaq = _gaq || [];
+		  _gaq.push(['_setAccount', 'UA-32543076-1']);
+		  _gaq.push(['_trackPageview']);
+
+		  (function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		  })();
+		</script>
 		 
 	<body>
 		<div id="toolbar" class="ui-widget-header ui-corner-all">
-			<button id="assemble_button" onclick="assemble()">Assemble</button>
-			<button id="debug_button" onclick="startDebugger()">Debug</button>
 			<button id="run_button" onclick="run()">Run</button>
 			<button id="step_button" onclick="step()">Step</button>
 			<button id="stop_button" onclick="stopDebugger()">Stop</button>
 			<button id="pause_button" onclick="pauseDebugger()">Pause</button>
 			<button id="reset_button" onclick="reset()">Reset</button>
+			
+			<button id="debug_button" onclick="startDebugger()">Debug</button>
+			<div style="margin-left: 12px; width: 1px; display: inline-block;"></div>
+			<button id="save_button" onclick="save()">Save</button>
+			<button id="open_button" onclick="_open()">Open</button>
+			<button id="new_button" onclick="_new()">New</button>
+			
 			<button id="about_button" class="right" onclick="about()">About</button>
 		</div>
 		
@@ -44,7 +60,7 @@
 			<div id="editing_windows">
 				<div id="source-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right: 310px; left: 0px; bottom: 220px; top: 50px; width: auto;">
 					<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
-						<span class="ui-dialog-title">Source</span>
+						<span id="editor_file_name" class="ui-dialog-title">Source</span>
 					</div>
 					<div id="editor" class="ui-dialog-content ui-widget-content"></div>
 				</div>
@@ -199,10 +215,22 @@
 			</p>
 			<p>DCPU-16 IDE is an assembler, debugger and emulator for <a href="http://0x10c.com" target="_tab">0x10c</a>.</p>
 			<p><a href="https://github.com/dangermccann/dcpu16-eumulator" target="_tab">Source code and documentation</a></p>
-			
+		</div>
+
+		
+		<div id="save_dialog" title="Save File">
+			<p>
+				Enter a file name: <br/>
+				<input type="text" id="file_name" />
+			</p>
 		</div>
 		
-		
+		<div id="open_dialog" title="Open File">
+			<p>
+				<ol id="selectable_file_list">
+				</ol>
+			</p>
+		</div>
 		
 	</body>
 </html>

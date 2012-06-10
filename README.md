@@ -93,7 +93,6 @@ TODO
 * Support for RESERVE keyword and #defines in assembler
 * better error messages for assembly exceptions
 * load code from POST body
-* maybe a way to save files?  use reddis? :)
 * set breakpoints in editor
 
 Thanks
