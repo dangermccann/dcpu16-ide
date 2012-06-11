@@ -1,5 +1,5 @@
 body { 
-	font-family: courier, 'courier new', 'fixed-width'; 
+	font-family: courier, 'courier new', Lucidatypewriter, monospace, fixed; 
 	font-size: 14px;
 	background: #000000;
 	margin: 0px; 

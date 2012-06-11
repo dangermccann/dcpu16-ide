@@ -523,7 +523,7 @@ function Emulator() {
 		STI: new Op(this, "STI", OPERATION_STI, 2, function(a, b) { 
 			var aVal = a.getA(), bVal = b.getB();
 			b.set(aVal);
-			a.set(bVal);
+			//a.set(bVal);
 			this.emulator.Registers.I.set((this.emulator.Registers.I.get() + 1) &  0xffff);
 			this.emulator.Registers.J.set((this.emulator.Registers.J.get() + 1) &  0xffff);
 		}),
@@ -531,7 +531,7 @@ function Emulator() {
 		STD: new Op(this, "STD", OPERATION_STD, 2, function(a, b) { 
 			var aVal = a.getA(), bVal = b.getB();
 			b.set(aVal);
-			a.set(bVal);
+			//a.set(bVal);
 			this.emulator.Registers.I.set((this.emulator.Registers.I.get() - 1) &  0xffff);
 			this.emulator.Registers.J.set((this.emulator.Registers.J.get() - 1) &  0xffff);
 		}),
