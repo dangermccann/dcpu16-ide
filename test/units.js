@@ -568,7 +568,6 @@ function units() {
 		e.async = false;
 		e.run(program);
 		
-		equal(e.Registers.A.get(), 0x05, "Register A is set to B");
 		equal(e.Registers.B.get(), 0x04, "Register B is set to A");
 		equal(e.Registers.I.get(), 0x07, "Register I has been incremented");
 		equal(e.Registers.J.get(), 0x08, "Register J has been incremented");
@@ -589,7 +588,6 @@ function units() {
 		e.async = false;
 		e.run(program);
 		
-		equal(e.Registers.A.get(), 0x05, "Register A is set to B");
 		equal(e.Registers.B.get(), 0x04, "Register B is set to A");
 		equal(e.Registers.I.get(), 0x05, "Register I has been decremented");
 		equal(e.Registers.J.get(), 0xffff, "Register J has been decremented");
