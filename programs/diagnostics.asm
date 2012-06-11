@@ -1,4 +1,4 @@
-; DCPU-16 Dianostics Application 
+; DCPU-16 Diagnostics Application 
 ; Copyright (c) 2012 John McCann
 ; 
 ; Performs device discovery and displays clock time.
