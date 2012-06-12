@@ -466,7 +466,7 @@ function updateCycles() {
 			var speed = (emulator.CPU_CYCLE - lastCycleUpdate.cycle) / (now - lastCycleUpdate.time);
 			lastCycleUpdate.time = now;
 			lastCycleUpdate.cycle = emulator.CPU_CYCLE;
-			val = Math.round(speed) + " MHz | " + val;
+			val = Math.round(speed) + " kHz | " + val;
 		}
 	}
 	

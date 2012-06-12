@@ -223,6 +223,14 @@ Utils = {
 		return result;
 	},
 	
+	color16To32: function(c) {
+		var r = (((c & 0xf00) >> 8) * 16) << 16;
+		var g = (((c & 0x0f0) >> 4) * 16) << 8;
+		var b = (c & 0x00f) * 16;
+		return Utils.makeColor(r | g | b);
+		
+	},
+	
 	makeColor: function(d) {
 		var hex = Number(d).toString(16);
 		hex = "000000".substr(0, 6 - hex.length) + hex; 
