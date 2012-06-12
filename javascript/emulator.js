@@ -340,7 +340,8 @@ function Emulator() {
 		set: function(val) { }
 	};
 	
-	for(var i = 0x20, literalVal = -1; i < 0x40; i++, literalVal++) {
+	this.Values[0x20] = new Literal(0xffff);	// -1
+	for(var i = 0x21, literalVal = 0; i < 0x40; i++, literalVal++) {
 		this.Values[i] = new Literal(literalVal);
 	}
 

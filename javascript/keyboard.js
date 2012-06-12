@@ -5,16 +5,16 @@ function Keyboard(_emulator) {
 	this.manufacturer = 0x90099009;
 	this.emulator = _emulator;
 	
-	this.interruptsOn = false;
-	this.interruptMessage = 0;
-	this.keys = [];
-	this.downKeys = {};
-	
 	var _this = this;
 	document.body.onkeydown = function(event) { _this.keyDown(event);  }
 	document.body.onkeyup = function(event)  { _this.keyUp(event);  }
 }
-Keyboard.prototype.init = function() { }
+Keyboard.prototype.init = function() { 
+	this.interruptsOn = false;
+	this.interruptMessage = 0;
+	this.keys = [];
+	this.downKeys = {};
+}
 
 Keyboard.prototype.keyDown = function(event) {
 	if(this.emulator.paused)

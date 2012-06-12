@@ -78,7 +78,7 @@ function units() {
 		e.async = false;
 		e.run(program);
 		
-		equal(e.Registers.A.get(), -1, "Register A is -1");
+		equal(Utils.to32BitSigned(e.Registers.A.get()), -1, "Register A is -1");
 		equal(e.Registers.B.get(), 0, "Register B is 0");
 		equal(e.Registers.C.get(), 3, "Register C is 3");
 		equal(e.Registers.I.get(), 0, "Register I is 0");
