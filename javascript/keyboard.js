@@ -6,8 +6,8 @@ function Keyboard(_emulator) {
 	this.emulator = _emulator;
 	
 	var _this = this;
-	document.body.onkeydown = function(event) { _this.keyDown(event);  }
-	document.body.onkeyup = function(event)  { _this.keyUp(event);  }
+	document.body.onkeydown = function(event) { return _this.keyDown(event);  }
+	document.body.onkeyup = function(event)  { return _this.keyUp(event);  }
 }
 Keyboard.prototype.init = function() { 
 	this.interruptsOn = false;
@@ -17,25 +17,34 @@ Keyboard.prototype.init = function() {
 }
 
 Keyboard.prototype.keyDown = function(event) {
-	if(this.emulator.paused)
-		return;
+	if(!this.emulator.paused) {			
+		var code = this.convert(event.keyCode);
+		if(code == 0)
+			return true;
 		
-	var code = this.convert(event.keyCode);
-	this.downKeys[""+code] = true;
+		this.downKeys[""+code] = true;
+		
+		if(code >= 0x90)
+			return true;
 
-	// TODO: some apps seem to assume that key input should go to this magical address...
-	this.emulator.RAM[0x9000 + this.keys.length % 0xf] = code;
+		// TODO: some apps seem to assume that key input should go to this magical address...
+		this.emulator.RAM[0x9000 + this.keys.length % 0xf] = code;
+		
+		this.keys.push(code);
+		
+		
+		if(this.interruptsOn)
+			this.emulator.interrupt(this.interruptMessage);
+	}
 	
-	this.keys.push(code);
-	
-	
-	if(this.interruptsOn)
-		this.emulator.interrupt(this.interruptMessage);
+	return event.keyCode == 8 ? false : true;
 }
 
 Keyboard.prototype.keyUp = function(event) {
 	var code = this.convert(event.keyCode);
 	this.downKeys[""+code] = false;
+	
+	return event.keyCode == 8 ? false : true;;
 }
 
 Keyboard.prototype.convert = function(code) {
@@ -76,8 +85,12 @@ Keyboard.prototype.convert = function(code) {
 			return 0x20;
 			
 		default:
-			if(code >= 0x20 && code <= 0x7f)
-				return code;
+			if(code >= 0x20 && code <= 0x7f) {
+				var str = String.fromCharCode(code);
+				if(!event.shiftKey)
+					str = str.toLowerCase()
+				return str.charCodeAt(0);
+			}
 		
 		return 0;
 		

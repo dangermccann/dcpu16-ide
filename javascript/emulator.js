@@ -557,6 +557,7 @@ function Emulator() {
 		}, this.SpecialOpSet),
 		
 		IAG: new Op(this, "IAG", OPERATION_IAG, 1, function(a) { 
+			var aVal = a.getA();
 			a.set(this.emulator.Registers.IA.get());
 		}, this.SpecialOpSet),
 		
@@ -565,6 +566,7 @@ function Emulator() {
 		}, this.SpecialOpSet),
 		
 		RFI: new Op(this, "RFI", OPERATION_RFI, 3, function(a) { 
+			var aVal = a.getA();
 			this.emulator.interruptQueueingEnabled = false;
 			this.emulator.Registers.A.set(this.emulator.Registers.SP.pop());
 			this.emulator.Registers.PC.set(this.emulator.Registers.SP.pop());
@@ -572,13 +574,15 @@ function Emulator() {
 		}, this.SpecialOpSet),
 		
 		IAQ: new Op(this, "IAQ", OPERATION_IAQ, 2, function(a) { 
-			if(a === 0)
+			var aVal = a.getA();
+			if(aVal === 0)
 				this.emulator.interruptQueueingEnabled = false;
 			else
 				this.emulator.interruptQueueingEnabled = true;
 		}, this.SpecialOpSet),
 		
 		HWN: new Op(this, "HWN", OPERATION_HWN, 2, function(a) { 
+			var aVal = a.getA();
 			a.set(this.emulator.devices.length);
 		}, this.SpecialOpSet),
 		

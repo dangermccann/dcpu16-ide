@@ -5,7 +5,7 @@ function Monitor(_emulator) {
 	this.manufacturer = 0x1c6c8b36;
 	this.emulator = _emulator;
 	
-	this.defaultFont = this.font = [
+	this.defaultFont = [
 		0x000f, 0x0808, 0x080f, 0x0808, 0x08f8, 0x0808, 0x00ff, 0x0808, 
 		0x0808, 0x0808, 0x08ff, 0x0808, 0x00ff, 0x1414, 0xff00, 0xff08,
 		0x1f10, 0x1714, 0xfc04, 0xf414, 0x1710, 0x1714, 0xf404, 0xf414,
@@ -48,6 +48,7 @@ function Monitor(_emulator) {
 	this.borderColor = 8;
 	this.zoom = 2;
 	this.memOffset = 0x8000;
+	this.fontOffset = 0x8180;
 	this.drawInterval = 0;
 	this.refreshCount = 0;
 	
@@ -72,7 +73,13 @@ Monitor.prototype.init = function() {
 	this.disconnect();
 	this.refreshCount = 0;
 	this.memOffset = 0x8000;
-	this.font = this.defaultFont;
+	this.fontOffset = 0x8180;
+	
+	// map font
+	for(var i = 0; i < this.defaultFont.length; i++) {
+		this.emulator.RAM[this.fontOffset  + i] = this.defaultFont[i];
+	}
+	
 	this.palette = this.defaultPalette;
 	
 	this.context.drawImage(this.bootScreen, 0, 0, this.canvas.width, this.canvas.height);
@@ -138,10 +145,10 @@ Monitor.prototype.drawGlyph = function(x, y, glyph, fg, bg, blink) {
 	
 	var cols = [];
 	glyph *= 2;
-	cols[0] = this.font[glyph] >> 8;
-	cols[1] = this.font[glyph] & 0xff;
-	cols[2] = this.font[glyph+1] >> 8;
-	cols[3] = this.font[glyph+1] & 0xff;
+	cols[0] = this.emulator.RAM[this.fontOffset + glyph] >> 8;
+	cols[1] = this.emulator.RAM[this.fontOffset + glyph] & 0xff;
+	cols[2] = this.emulator.RAM[this.fontOffset + glyph+1] >> 8;
+	cols[3] = this.emulator.RAM[this.fontOffset + glyph+1] & 0xff;
 	
 	for(var row = 0; row < 8; row++) {
 		for(var col = 0; col < 4; col++) {
@@ -176,14 +183,7 @@ Monitor.prototype.disconnect = function() {
 }
 
 Monitor.prototype.memMapFont = function(offset) {
-	if(offset === 0)
-		this.font = this.defaultFont;
-	else {
-		this.font = [];
-		for(var i = 0; i < 256; i++) {
-			this.font[i] = this.emulator.RAM[offset+i];
-		}
-	}
+	this.fontOffset = offset;
 }
 
 Monitor.prototype.memMapPalette = function(offset) {
@@ -199,14 +199,14 @@ Monitor.prototype.memMapPalette = function(offset) {
 
 Monitor.prototype.memDumpFont = function(offset) {
 	for(var i = 0; i < 256; i++) {
-		this.emulator.RAM[offset+i] = this.font[i];
+		this.emulator.RAM[offset+i] = this.emulator.RAM[this.fontOffset + i];
 	}
 	this.emulator.CPU_CYCLE += 256;
 }
 
 Monitor.prototype.memDumpPalette = function(offset) {
 	for(var i = 0; i < 16; i++) {
-		this.emulator.RAM[offset+i] = this.font[i];
+		this.emulator.RAM[offset+i] = this.palette[i];
 	}
 	this.emulator.CPU_CYCLE += 16;
 }
