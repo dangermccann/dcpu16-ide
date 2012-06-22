@@ -5,9 +5,20 @@ var _debugger;
 var LINE_HEIGHT = 14;
 var userData;
 
+urlParams = {};
+(function () {
+	var e,
+		a = /\+/g,  // Regex for replacing addition symbol with a space
+		r = /([^&=]+)=?([^&]*)/g,
+		d = function (s) { return decodeURIComponent(s.replace(a, " ")); },
+		q = window.location.search.substring(1);
+
+	while (e = r.exec(q))
+	   urlParams[d(e[1])] = d(e[2]);
+})();
+
 $(document).ready(function(){	
 	init();
-
 });
 
 function init() {
@@ -141,8 +152,15 @@ function init() {
 		};
 	}
 	
-	// load default file if we couldn't fine one to open
-	if(userData.last == null || !openFile(userData.last)) {
+	
+	if(urlParams["program"]) {
+		// load specified program if an ID was provided
+		load(urlParams["program"]).success(function(data) { 
+			editor.getSession().setValue(data);
+		});
+	}
+	else if(userData.last == null || !openFile(userData.last)) {
+		// load default file if we couldn't fine one to open
 		$.ajax({
 			url: 			"/programs/diagnostics.asm",
 			context:		this,
@@ -224,6 +242,34 @@ function _new() {
 
 function clearUserData() {
 	localStorage.setItem('userData', null);
+}
+
+function post() {
+	var id = randomId();
+	var data  = "program_id=" + id + "&" + escape(editor.getSession().getValue());
+	return $.ajax({
+		url: 			"/program",
+		context:		this,
+		type:			"POST",
+		data:			data,
+		dataType: 		"text",
+		success: 		function(data) { 
+			console.log("Posted successfully");
+			window.open("/?program=" + id, '_tab');
+		}
+	});
+}
+
+function load(programId) {
+	return $.ajax({
+		url: 			"/program/" + programId,
+		context:		this,
+		dataType: 		"text"
+	});
+}
+
+function randomId() {
+	return ((new Date()).getTime() + Math.round((Math.random()*1000000000000))).toString(36);
 }
 
 function assemble() {
