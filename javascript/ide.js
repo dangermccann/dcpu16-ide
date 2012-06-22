@@ -194,6 +194,7 @@ function save() {
 		doSave(userData.last);
 		editor.focus();
 	}
+	_gaq.push(['_trackEvent', "editor", "save"]);
 }
 
 function doSave(filename) {
@@ -222,6 +223,7 @@ function _open() {
 	$("#selectable_file_list").data("selected", null);
 	
 	$("#open_dialog").dialog("open");
+	_gaq.push(['_trackEvent', "editor", "open"]);
 }
 
 function openFile(filename) {
@@ -246,6 +248,7 @@ function _new() {
 	$("#editor_file_name").html("Source");
 	
 	editor.focus();
+	_gaq.push(['_trackEvent', "editor", "new"]);
 }
 
 function clearUserData() {
@@ -266,7 +269,10 @@ function post() {
 	}).then(function(result) { 
 		console.log("Posted successfully to ID: " + id);
 		win.location = "/?program=" + id;
+		_gaq.push(['_trackEvent', "editor", "postComplete", id]);
+
 	});
+	_gaq.push(['_trackEvent', "editor", "post"]);
 }
 
 function load(programId) {
@@ -275,6 +281,7 @@ function load(programId) {
 		context:		this,
 		dataType: 		"text"
 	});
+	_gaq.push(['_trackEvent', "editor", "load", programId]);
 }
 
 function randomId() {
@@ -354,6 +361,8 @@ function startDebugger() {
 	emulator.paused = true;
 	emulator.run(listing.bytecode());
 	updateRegisterWindow();
+	
+	_gaq.push(['_trackEvent', "debugger", "start"]);
 }
 
 function stopDebugger() {
@@ -375,15 +384,21 @@ function stopDebugger() {
 	$("#debugging_windows").hide();
 	
 	editor.focus();
+	
+	_gaq.push(['_trackEvent', "debugger", "stop"]);
 }
 
 function pauseDebugger() {
 	_debugger.pause();
+	
+	_gaq.push(['_trackEvent', "debugger", "pause"]);
 }
 
 function run() {
 	_debugger.run();
 	updateDebugger();
+	
+	_gaq.push(['_trackEvent', "debugger", "run"]);
 }
 
 function step() {
@@ -394,6 +409,8 @@ function reset() {
 	emulator.reboot();
 	emulator.paused = true;
 	emulator.run(listing.bytecode());
+	
+	_gaq.push(['_trackEvent', "debugger", "reset"]);
 }
 
 
@@ -534,4 +551,6 @@ function updateCycles() {
 function about() {
 	$("#about_dialog").dialog("open");
 	document.activeElement.blur();
+	
+	_gaq.push(['_trackEvent', "general", "about"]);
 }
