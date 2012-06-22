@@ -4,6 +4,7 @@ function Keyboard(_emulator) {
 	this.version = 1;
 	this.manufacturer = 0x90099009;
 	this.emulator = _emulator;
+	this.downKeys = {};
 	
 	var _this = this;
 	document.body.onkeydown = function(event) { return _this.keyDown(event);  }

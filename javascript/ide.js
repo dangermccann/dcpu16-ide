@@ -163,8 +163,8 @@ function init() {
 			editor.getSession().setValue(data)
 			assemble(data);
 			
-			//if(readOnly)
-			//	startDebugger();
+			if(readOnly)
+				startDebugger();
 		});
 	}
 	else if(userData.last == null || !openFile(userData.last)) {
@@ -254,17 +254,18 @@ function clearUserData() {
 
 function post() {
 	var id = randomId();
-	var data  = "program_id=" + id + "&program=" + escape(editor.getSession().getValue());
+	var data  = "program_id=" + id + "&program=" + encodeURIComponent(editor.getSession().getValue());
+	var win = window.open("about:blank", '_tab');
 	return $.ajax({
 		url: 			"/program",
 		context:		this,
 		type:			"POST",
 		data:			data,
 		dataType: 		"text",
-		success: 		function(data) { 
-			console.log("Posted successfully");
-			window.open("/?program=" + id, '_tab');
-		}
+		success: 		function(data) { }
+	}).then(function(result) { 
+		console.log("Posted successfully to ID: " + id);
+		win.location = "/?program=" + id;
 	});
 }
 
