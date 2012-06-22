@@ -4,6 +4,7 @@ var editor;
 var _debugger;
 var LINE_HEIGHT = 14;
 var userData;
+var readOnly = false;
 
 urlParams = {};
 (function () {
@@ -26,6 +27,7 @@ function init() {
 	$("#save_button").button({ icons: { primary: "ui-icon-disk" } });
 	$("#open_button").button({ icons: { primary: "ui-icon-folder-open" } });
 	$("#new_button").button({ icons: { primary: "ui-icon-document" } });
+	$("#post_button").button({ icons: { primary: "ui-icon-extlink" } });
 	
 	$("#run_button").button({ icons: { primary: "ui-icon-play" } }).hide();
 	$("#step_button").button({ icons: { primary: "ui-icon-arrowreturnthick-1-e" } }).hide();
@@ -154,9 +156,15 @@ function init() {
 	
 	
 	if(urlParams["program"]) {
+		readOnly = true;
+	
 		// load specified program if an ID was provided
 		load(urlParams["program"]).success(function(data) { 
-			editor.getSession().setValue(data);
+			editor.getSession().setValue(data)
+			assemble(data);
+			
+			//if(readOnly)
+			//	startDebugger();
 		});
 	}
 	else if(userData.last == null || !openFile(userData.last)) {
@@ -171,8 +179,8 @@ function init() {
 		});
 	}
 	
-	
-	editor.focus();
+	if(!readOnly)
+		editor.focus();
 	
 	
 	//$("#source-dialog").resizable( { autoHide: true, handles: "s" });
@@ -246,7 +254,7 @@ function clearUserData() {
 
 function post() {
 	var id = randomId();
-	var data  = "program_id=" + id + "&" + escape(editor.getSession().getValue());
+	var data  = "program_id=" + id + "&program=" + escape(editor.getSession().getValue());
 	return $.ajax({
 		url: 			"/program",
 		context:		this,
@@ -272,8 +280,8 @@ function randomId() {
 	return ((new Date()).getTime() + Math.round((Math.random()*1000000000000))).toString(36);
 }
 
-function assemble() {
-	var tokenized = Tokenizer.tokenize(editor.getSession().getValue());
+function assemble(data) {
+	var tokenized = Tokenizer.tokenize(data || editor.getSession().getValue());
 	listing = Assembler.compile(tokenized.lines);
 	
 	var errors = (new Array()).concat(tokenized.errors, listing.errors);
@@ -312,11 +320,13 @@ function startDebugger() {
 	$("#save_button").hide();
 	$("#open_button").hide();
 	$("#new_button").hide();
+	$("#post_button").hide();
 
 	$("#run_button").show();
 	$("#step_button").show();
 	$("#pause_button").show();
-	$("#stop_button").show();
+	if(!readOnly)
+		$("#stop_button").show();
 	$("#reset_button").show();
 	
 	$("#listing").find(".offset").unbind();
@@ -352,6 +362,7 @@ function stopDebugger() {
 	$("#save_button").show();
 	$("#open_button").show();
 	$("#new_button").show();
+	$("#post_button").show();
 
 	$("#run_button").hide();
 	$("#step_button").hide();
