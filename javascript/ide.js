@@ -257,6 +257,7 @@ function clearUserData() {
 
 function post() {
 	var id = randomId();
+	_gaq.push(['_trackEvent', "editor", "post", id]);
 	var data  = "program_id=" + id + "&program=" + encodeURIComponent(editor.getSession().getValue());
 	var win = window.open("about:blank", '_tab');
 	return $.ajax({
@@ -272,7 +273,6 @@ function post() {
 		_gaq.push(['_trackEvent', "editor", "postComplete", id]);
 
 	});
-	_gaq.push(['_trackEvent', "editor", "post"]);
 }
 
 function load(programId) {
