@@ -19,7 +19,7 @@ Keyboard.prototype.init = function() {
 
 Keyboard.prototype.keyDown = function(event) {
 	if(!this.emulator.paused) {			
-		var code = this.convert(event.keyCode);
+		var code = this.convert(event.keyCode, event);
 		if(code == 0)
 			return true;
 		
@@ -42,13 +42,13 @@ Keyboard.prototype.keyDown = function(event) {
 }
 
 Keyboard.prototype.keyUp = function(event) {
-	var code = this.convert(event.keyCode);
+	var code = this.convert(event.keyCode, event);
 	this.downKeys[""+code] = false;
 	
 	return event.keyCode == 8 ? false : true;;
 }
 
-Keyboard.prototype.convert = function(code) {
+Keyboard.prototype.convert = function(code, event) {
 	// TODO: convert key codes
 	switch(code) {
 		// backspace

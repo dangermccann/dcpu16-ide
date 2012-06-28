@@ -183,7 +183,14 @@ Monitor.prototype.disconnect = function() {
 }
 
 Monitor.prototype.memMapFont = function(offset) {
-	this.fontOffset = offset;
+	if(offset == 0) {
+		this.fontOffset = 0x8180;
+		for(var i = 0; i < this.defaultFont.length; i++) {
+			this.emulator.RAM[this.fontOffset  + i] = this.defaultFont[i];
+		}
+	}
+	else
+		this.fontOffset = offset;
 }
 
 Monitor.prototype.memMapPalette = function(offset) {
