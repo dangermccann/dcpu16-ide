@@ -215,12 +215,21 @@ function persist() {
 function _open() {
 	var str = "";
 	for(var f in userData.files) {
-		str += "<li class='ui-widget-content'>" + f + "</li>";
+		str += "<li class='ui-widget-content'>";
+		str += f;
+		//str += "<div style='margin-top: -3px;' class='right ui-icon ui-icon-trash'></div>";
+		str += "</li>";
 	}
 	if(str.length == 0)
 		str = "Nothing to open.  You haven't saved any files yet!";
 	$("#selectable_file_list").html(str);
 	$("#selectable_file_list").data("selected", null);
+	
+	$("#selectable_file_list").find(".ui-icon-trash").mousedown(function(evt) { 
+		evt.preventDefault();
+		console.log($(this).parent().text());
+		
+	});
 	
 	$("#open_dialog").dialog("open");
 	_gaq.push(['_trackEvent', "editor", "open"]);
@@ -338,7 +347,11 @@ function startDebugger() {
 	$("#reset_button").show();
 	
 	$("#listing").find(".offset").unbind();
+	$("#listing").find(".hexidecimal").unbind();
+	$("#listing").find(".label_ref").unbind();
+	
 	$("#listing").html(listing.htmlFormat());
+	
 	$("#listing").find(".offset").click(function(evt) {
 		var lineNumber = parseInt(this.id.substr("offset_line_".length));
 		console.log("Breakpoint on " + lineNumber);
@@ -348,6 +361,14 @@ function startDebugger() {
 			$(this).toggleClass("breakpoint");
 			_debugger.toggleBreakpoint(parseInt($(this).text()), lineNumber);
 		}
+	});
+	$("#listing").find(".hexidecimal").click(function(evt) {
+		gotoMemoryLocation(parseInt($(this).text()));
+	});
+	$("#listing").find(".label_ref").click(function(evt) {
+		var offset = listing.labels[$(this).text()];
+		var top = getLineTop(calculateLine(offset));
+		scrollListingTo(top, true);
 	});
 	
 	for(var bp in _debugger.breakpoints) {
@@ -447,9 +468,13 @@ function realtimeUpdate() {
 	updateCycles();
 }
 
-function calculateDebuggerLine() {
+function calculateCurrentDebuggerLine() {
+	return calculateLine(emulator.PC.get());
+}
+
+function calculateLine(location) {
 	// find line from memory offset
-	var location = emulator.PC.get();
+	
 	var line = 0;
 	for(line = 0; line < listing.lines.length; line++) {
 		if(listing.lines[line].offset >= location) {
@@ -466,19 +491,25 @@ function calculateDebuggerLine() {
 	return line;
 }
 
-function getDebuggerLineTop(line) {
+function getLineTop(line) {
 	return line*LINE_HEIGHT + $("#listing").position().top + 2;
 }
 
 function updateDebuggerLine() {
-	var top = getDebuggerLineTop(calculateDebuggerLine()) - $("#listing").scrollTop();
+	var top = getLineTop(calculateCurrentDebuggerLine()) - $("#listing").scrollTop();
 	$("#debugger_line").css("top", top + "px");
 }
 
 function ensureDebuggerLineVisible() {
-	var top = getDebuggerLineTop(calculateDebuggerLine());
+	var top = getLineTop(calculateCurrentDebuggerLine());
 	//console.log("ensureDebuggerLineVisible | current: " + $("#listing").scrollTop() + " | dest: " + top);
-	if(top > $("#listing").scrollTop() + $("#listing").height() - LINE_HEIGHT || top < $("#listing").scrollTop()) {
+	scrollListingTo(top);
+}
+
+function scrollListingTo(top, force) {
+	if(force ||
+		(top > $("#listing").scrollTop() + $("#listing").height() - LINE_HEIGHT) || 
+		top < $("#listing").scrollTop()) {
 		$("#listing").scrollTop(Math.max(top - $("#listing").height()/2, 0));
 	}
 }

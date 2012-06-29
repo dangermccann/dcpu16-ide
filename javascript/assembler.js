@@ -295,7 +295,6 @@ Assembler =  {
 	compile: function(tokenizedLines) {
 		
 		var offset = 0;
-		var labels = {};
 		var output = new Listing();
 		var errorMap = {};
 	
@@ -320,9 +319,9 @@ Assembler =  {
 						}
 						else if(token.type == "label_def") {
 							var labelName = token.lexeme.substr(1).toLowerCase();
-							if(labels[labelName] != null) this.throwInvalid(j, token, "Duplicate label definition (" + labelName + ")");
+							if(output.labels[labelName] != null) this.throwInvalid(j, token, "Duplicate label definition (" + labelName + ")");
 							
-							labels[labelName] = offset;
+							output.labels[labelName] = offset;
 						}
 						else if(token.type == "reserved_word" && token.lexeme == "DAT") {
 							dat = token;
@@ -399,7 +398,7 @@ Assembler =  {
 					// handle arguments
 					else {
 						if(command != null) {
-							var arg = this.compileArgument(line, j, i+1, labels);
+							var arg = this.compileArgument(line, j, i+1, output.labels);
 							if(arg.value != null)
 								arguments.push(arg);
 							j += arg.tokenCount;
@@ -484,6 +483,7 @@ Assembler =  {
 function Listing() {
 	this.lines = [];
 	this.errors = [];
+	this.labels = {};
 
 	this.addLine = function(offset, tokens, bytecode) {
 		this.lines.push({ "offset": offset, "tokens": tokens, "bytecode": bytecode });

@@ -114,18 +114,20 @@ textarea {
 }
 .hexidecimal { 
 	color: #3bd4d4; 
+	cursor: pointer;
 }
 .decimal { 
 	color: #0077ff; 
 }
 .string { 
-	color: #007700 
+	color: #007700;
 }
 .label_def { 
-	color: #6666ff 
+	color: #6666ff;
 }
 .label_ref { 
-	color: #aaaaff 
+	color: #aaaaff;
+	cursor: pointer;
 }
 .command { 
 	color: #ffffff; 
