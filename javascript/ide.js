@@ -34,6 +34,7 @@ function init() {
 	$("#pause_button").button({ icons: { primary: "ui-icon-pause" } }).hide();
 	$("#stop_button").button({ icons: { primary: "ui-icon-stop" } }).hide();
 	$("#reset_button").button({ icons: { primary: "ui-icon-arrowrefresh-1-s" } }).hide();
+	$("#clone_button").button({ icons: { primary: "ui-icon-copy" } }).hide();
 	$("#about_button").button({ icons: { primary: "ui-icon-help" } });
 	
 	$("#about_dialog").dialog({ 
@@ -156,14 +157,15 @@ function init() {
 	
 	
 	if(urlParams["program"]) {
-		readOnly = true;
+		if(!urlParams["clone"])
+			readOnly = true;
 	
 		// load specified program if an ID was provided
 		load(urlParams["program"]).success(function(data) { 
 			editor.getSession().setValue(data)
 			assemble(data);
 			
-			if(readOnly)
+			if(readOnly) 
 				startDebugger();
 		});
 	}
@@ -268,7 +270,7 @@ function post() {
 	var id = randomId();
 	_gaq.push(['_trackEvent', "editor", "post", id]);
 	var data  = "program_id=" + id + "&program=" + encodeURIComponent(editor.getSession().getValue());
-	var win = window.open("about:blank", '_tab');
+	var win = window.open("about:blank", '_blank');
 	return $.ajax({
 		url: 			"/program",
 		context:		this,
@@ -291,6 +293,12 @@ function load(programId) {
 		dataType: 		"text"
 	});
 	_gaq.push(['_trackEvent', "editor", "load", programId]);
+}
+
+function clone() {
+	var programId = urlParams["program"];
+	window.open("/?program=" + programId + "&clone=true", '_blank');
+	_gaq.push(['_trackEvent', "editor", "clone", programId]);
 }
 
 function randomId() {
@@ -344,6 +352,8 @@ function startDebugger() {
 	$("#pause_button").show();
 	if(!readOnly)
 		$("#stop_button").show();
+	else
+		$("#clone_button").show();
 	$("#reset_button").show();
 	
 	$("#listing").find(".offset").unbind();
@@ -400,6 +410,7 @@ function stopDebugger() {
 	$("#pause_button").hide();
 	$("#stop_button").hide();
 	$("#reset_button").hide();
+	$("#clone_button").hide();
 	
 	$("#editing_windows").show();
 	$("#debugging_windows").hide();
