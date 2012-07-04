@@ -100,10 +100,10 @@ function init() {
 	editor.getSession().on('change', function() { 
 		assemble();
 	});
-	/*
-	editor.on("guttermousedown", function(e){
-		console.log(e);
-		var target = e.domEvent.target;
+	
+	editor.renderer.on("gutterclick", function(e){
+		//console.log("gutterclick", e);
+		var target = e.htmlEvent.target;
 		if (target.className.indexOf("ace_gutter-cell") == -1)
 			return;
 		if (!editor.isFocused())
@@ -111,11 +111,8 @@ function init() {
 		if (e.clientX > 25 + target.getBoundingClientRect().left)
 			return;
 
-		var row = e.getDocumentPosition().row
-		e.editor.session.setBreakpoint(row)
-		e.stop()
+		toggleBreakpoint(e.row);
 	});
-	*/
 	
 	emulator = new Emulator();
 	emulator.async = true;
@@ -364,13 +361,7 @@ function startDebugger() {
 	
 	$("#listing").find(".offset").click(function(evt) {
 		var lineNumber = parseInt(this.id.substr("offset_line_".length));
-		console.log("Breakpoint on " + lineNumber);
-		
-		// only allow breakpoints on lines that have actual commands
-		if(listing.lines[lineNumber].bytecode.length > 0) {
-			$(this).toggleClass("breakpoint");
-			_debugger.toggleBreakpoint(parseInt($(this).text()), lineNumber);
-		}
+		toggleBreakpoint(lineNumber);
 	});
 	$("#listing").find(".hexidecimal").click(function(evt) {
 		gotoMemoryLocation(parseInt($(this).text()));
@@ -477,6 +468,24 @@ function realtimeUpdate() {
 	updateRegisterWindow();
 	updateMemoryWindow();
 	updateCycles();
+}
+
+function toggleBreakpoint(lineNumber) {
+	console.log("Toggle breakpoint on line " + lineNumber);
+		
+	// only allow breakpoints on lines that have actual commands
+	if(listing.lines[lineNumber].bytecode.length > 0) {
+		$("#offset_line_"+lineNumber).toggleClass("breakpoint");
+		_debugger.toggleBreakpoint(listing.lines[lineNumber].offset, lineNumber);
+		
+		
+		if(editor.session.getBreakpoints()[lineNumber])
+			editor.session.clearBreakpoint(lineNumber);
+		else
+			editor.session.setBreakpoint(lineNumber);
+	}
+	
+	_gaq.push(['_trackEvent', "debugger", "toggleBreakpoint"]);
 }
 
 function calculateCurrentDebuggerLine() {

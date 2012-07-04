@@ -45,11 +45,6 @@ textarea {
 	font-size: 14px !important;
 }
 
-.ace_gutter-cell.ace_breakpoint{
-    border-radius: 20px 0px 0px 20px;
-    box-shadow: 0px 0px 1px 1px red inset;
-} 
-
 .dialog_contents {
 	position: absolute !important; 
 	top: 34px; 
@@ -94,6 +89,15 @@ textarea {
 }
 
 .breakpoint {
+	border-radius: 2px 2px 2px 2px;
+	box-shadow: 0px 0px 1px 1px red inset;
+	background: #971200;
+	color: #aaaaaa !important;
+}
+
+.ace_gutter-cell.ace_breakpoint {
+	border-radius: 2px 2px 2px 2px;
+	box-shadow: 0px 0px 1px 1px red inset;
 	background: #971200;
 	color: #aaaaaa !important;
 }
