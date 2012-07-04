@@ -18,6 +18,8 @@ Keyboard.prototype.init = function() {
 }
 
 Keyboard.prototype.keyDown = function(event) {
+	if(document.activeElement.tagName == "INPUT") return;
+
 	if(!this.emulator.paused) {			
 		var code = this.convert(event.keyCode, event);
 		if(code == 0)
@@ -42,10 +44,12 @@ Keyboard.prototype.keyDown = function(event) {
 }
 
 Keyboard.prototype.keyUp = function(event) {
+	if(document.activeElement.tagName == "INPUT") return;
+	
 	var code = this.convert(event.keyCode, event);
 	this.downKeys[""+code] = false;
 	
-	return event.keyCode == 8 ? false : true;;
+	return event.keyCode == 8 ? false : true;
 }
 
 Keyboard.prototype.convert = function(code, event) {

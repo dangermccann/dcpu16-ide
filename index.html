@@ -113,7 +113,7 @@
 					</div>
 				</div>
 				
-				<div id="registers-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right:0px; width: 300px; bottom: 0px; top: 310px;">
+				<div id="registers-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right:0px; width: 300px; height: 246px; top: 310px;">
 					<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
 					  <span class="ui-dialog-title">Registers</span>
 					</div>
@@ -214,6 +214,19 @@
 							</div>
 							<div class="clear"></div>
 						</div>
+					</div>
+				</div>
+			
+				<div id="watches-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right:0px; width: 300px; bottom: 0px; top: 566px;">
+					<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
+					  <span class="ui-dialog-title">Watches</span>
+					  <div id="watches_remove_button" class="right titlebar-icon"><div class="ui-icon ui-icon-minusthick"></div></div>
+					  <div id="watches_add_button" class="right titlebar-icon"><div class="ui-icon ui-icon-plusthick"></div></div>
+					</div>
+					<div id="watches">
+						<ol id="watches_list"></ol>
+						<li id="watch_template" style="display: none"><div class="watch_key"></div><div class="watch_value"></div><div class="clear"></div></li>
+						<li id="watch_edit_template" style="display: none"><input type="text"></input></li>
 					</div>
 				</div>
 			</div>

@@ -45,6 +45,20 @@ textarea {
 	font-size: 14px !important;
 }
 
+.titlebar-icon {
+	cursor: pointer;
+	margin-top: 2px;
+	border: 1px solid #ffffff;
+	margin-right: 3px;
+	background: rgba(255, 255, 255, 0.5);
+	width: 16px;
+	height: 16px;
+}
+
+.titlebar-icon:hover { 
+	background: rgba(255, 255, 255, 0.8);
+}
+
 .dialog_contents {
 	position: absolute !important; 
 	top: 34px; 
@@ -242,3 +256,49 @@ textarea {
 	height: 14px; 
 }
 
+#watches {
+	overflow-y: auto;
+	max-height: 230px;
+}
+
+#watches_list .ui-selecting { 
+	background: #dbffb0; 
+	color: black; 
+}
+#watches_list .ui-selected { 
+	background: #9fda58; 
+	color: black; 
+	padding: 3px 3px 5px 3px; 
+	border: 1px solid #ffffff;
+
+}
+#watches_list { 
+	list-style-type: none; 
+	margin: 0; 
+	padding: 0; 
+	cursor: pointer;
+}
+#watches_list li { 
+	margin: 3px; 
+	padding: 4px 4px 6px 4px; 
+	height: 14px; 
+}
+
+#watches_list .watch_key { 
+	width: 150px;
+	float: left;
+	overflow: hidden;
+}
+#watches_list .watch_value { 
+	float: left;
+}
+#watches_list .watch_value.changed { 
+
+}
+#watches_list input {
+	margin: 0;
+	background: #1D1D1D;
+	color: white;
+	border: 1px solid #DDD;
+	width: 280px;
+}

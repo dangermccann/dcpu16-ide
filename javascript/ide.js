@@ -89,6 +89,20 @@ function init() {
 		gotoMemoryLocation(parseInt($(this).html()));
 	});
 	
+	
+	$("#watches_add_button").click(function() {  
+		addWatch();
+	});
+	$("#watches_remove_button").click(function() {  
+		removeWatch();
+	});
+	$("#watches_list").selectable({
+		cancel: ":input,option",
+		filter: "li",
+		selected: function(event, ui) { 
+			$("#watches_list").data("selected", ui.selected.id);
+		}
+	});
 
 	editor = ace.edit("editor");
 	editor.setTheme("ace/theme/monokai");
@@ -151,6 +165,7 @@ function init() {
 			last: null
 		};
 	}
+	userData.watches = userData.watches || [];
 	
 	
 	if(urlParams["program"]) {
@@ -383,6 +398,7 @@ function startDebugger() {
 	emulator.paused = true;
 	emulator.run(listing.bytecode());
 	updateRegisterWindow();
+	refreshWatches();
 	
 	_gaq.push(['_trackEvent', "debugger", "start"]);
 }
@@ -446,6 +462,7 @@ function updateDebugger() {
 		updateDebuggerLine();
 		updateRegisterWindow();
 		updateMemoryWindow();
+		updateWatches();
 		updateCycles();
 		
 		$("#pause_button").hide();
@@ -579,6 +596,93 @@ function updateMemoryWindow() {
 function gotoMemoryLocation(location) {
 	$("#memory_container").scrollTop(Math.floor(location / 8) * LINE_HEIGHT);
 	updateMemoryWindow();
+}
+
+function updateWatches() {
+	$("#watches_list").children().each(function(index, elem) {
+		var key = $(elem).find(".watch_key").text();
+		var memoryLocation = -1;
+		if(isNaN(parseInt(key))) {
+			// label
+			memoryLocation = listing.labels[key] || -1;
+		}
+		else {
+			// numeric
+			memoryLocation = parseInt(key);
+			
+		}
+		
+		if(memoryLocation >= 0 && memoryLocation < emulator.RAM.length) {
+			$(elem).find(".watch_value").html(Utils.hex(emulator.RAM[memoryLocation]));
+		}
+		else
+			$(elem).find(".watch_value").html("[invalid]");
+	});
+}
+
+function refreshWatches() {
+	$("#watches_list").removeData("selected");
+	$("#watches_list").empty();
+	for(var i = 0; i < userData.watches.length; i++) {
+		var val = userData.watches[i];
+		var watch = $("#watch_template").clone();
+		watch.attr("id", randomId());
+		watch.find(".watch_key").html(val);
+		watch.show();
+		$("#watches_list").append(watch);
+	}
+	updateWatches();
+}
+
+function addWatch() {
+	$('#watches_list .ui-selected').removeClass('ui-selected');
+	$("#watches_list").removeData("selected");
+
+	function commitWatch(elem) {
+		if(elem.val().length > 0) {
+			userData.watches.splice(0, 0,elem.val());
+			persist();
+		}
+		elem.remove();
+		refreshWatches();
+	}
+	
+	var edit = $("#watch_edit_template").clone();
+	edit.attr("id", randomId());
+	$("#watches_list").prepend(edit);
+	edit.show();
+	edit.find("input").focus();
+	edit.find("input").blur(function() { 
+		commitWatch($(this));
+	});
+	edit.find("input").keydown(function(event) { 
+		if(event.which == 13) { 
+			commitWatch($(this));
+		}
+		else if(event.which == 27) { 
+			$(this).val("");
+			commitWatch($(this));
+		}
+	});
+	
+	_gaq.push(['_trackEvent', "debugger", "addWatch"]);
+}
+
+function removeWatch() {
+	var id = $("#watches_list").data("selected");
+	if(id) {
+		var watch = $("#"+id).find(".watch_key").html();
+		if(watch && watch.length > 0) {
+			var idx = userData.watches.indexOf(watch);
+			if(idx > -1) {
+				userData.watches.splice(idx, 1);
+				persist();
+				refreshWatches();
+			}
+		}
+	}
+	
+	_gaq.push(['_trackEvent', "debugger", "removeWatch"]);
 }
 
 lastCycleUpdate = { time: 0, cycle: 0 };
