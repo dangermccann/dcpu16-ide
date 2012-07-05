@@ -190,9 +190,10 @@ DAT 0x8000
 DAT 0xf615, 0x7349, "  X. LEM-1802 Monitor           ", 0
 DAT 0x7406, 0x30cf, "  X. Generic Keyboard           ", 0
 DAT 0xb402, 0x12d0, "  X. Generic Clock              ", 0
+DAT 0x4cae, 0x74fa, "  X. HMD2043 Harold Media Drive ", 0
 
 :known_device_count
-DAT 3
+DAT 4
 
 :clock_index
 DAT 0xffff

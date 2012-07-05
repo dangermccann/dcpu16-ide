@@ -138,6 +138,7 @@ function init() {
 	emulator.devices.push(m);
 	emulator.devices.push(new Keyboard(emulator));
 	emulator.devices.push(new Clock(emulator));
+	emulator.devices.push(new HMD2043(emulator));
 	
 	_debugger = new Debugger(emulator);
 	_debugger.onStep = function(location) {
