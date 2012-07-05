@@ -794,6 +794,51 @@ function units() {
 	});
 	
 	
+	module("Hardware Module");
+	test("HMD2043 test", function() { 
+		expect(1);
+		stop();
+	
+		var randomData = new Array(2048);
+		for(var i = 0; i < randomData.length; i++) {
+			randomData[i] = Math.floor(Math.random() * 0xffff);
+		}
+	
+		var e = new Emulator();		
+		e.async = false;
+		var drive = new HMD2043(e);
+		e.devices.push(drive);
+		e.reboot();
+		drive.insertBlankMedia("unit test");
+		
+		
+		var offset = 0x100;
+		for(var i = 0; i < randomData.length; i++) {
+			e.RAM[offset + i] = randomData[i];
+		}
+		
+		drive.write(550, randomData.length / drive.media.wordsPerSector, offset, function() {
+			for(var i = 0; i < randomData.length; i++) {
+				e.RAM[offset + i] = 0;
+			}
+		
+			drive.read(550, randomData.length / drive.media.wordsPerSector, offset, function() {
+				for(var i = 0; i < randomData.length; i++) {
+					if(e.RAM[offset + i] != randomData[i]) {
+						ok(false, "The data was not the same after reading");
+						start();
+						return;
+					}
+				}
+				
+				drive.media.erase();
+				
+				ok(true, "The data was written and read correctly");
+				start();
+			});
+		});
+	});
+	
 	
 	
 	function compareArrays(ary1, ary2) {
