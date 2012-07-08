@@ -5,6 +5,7 @@ var _debugger;
 var LINE_HEIGHT = 14;
 var userData;
 var readOnly = false;
+var mediaDrive;
 
 urlParams = {};
 (function () {
@@ -133,12 +134,14 @@ function init() {
 	emulator.verbose = false;
 	emulator.paused = true;
 	var m = new Monitor(emulator);
+	mediaDrive = new HMD2043(emulator);
 	document.getElementById("monitor").appendChild(m.getDOMElement());
+	document.getElementById("media-drive").appendChild(mediaDrive.getDOMElement());
 	
 	emulator.devices.push(m);
 	emulator.devices.push(new Keyboard(emulator));
 	emulator.devices.push(new Clock(emulator));
-	emulator.devices.push(new HMD2043(emulator));
+	emulator.devices.push(mediaDrive);
 	
 	_debugger = new Debugger(emulator);
 	_debugger.onStep = function(location) {
@@ -197,6 +200,16 @@ function init() {
 	if(!readOnly)
 		editor.focus();
 	
+	$("#toggle_media_button").click(function() {
+		if(mediaDrive.media) {
+			mediaDrive.eject();
+			$("#toggle_media_button").html("Insert Media");
+		}
+		else {
+			mediaDrive.insertBlankMedia();
+			$("#toggle_media_button").html("Eject Media");
+		}
+	})
 	
 	//$("#source-dialog").resizable( { autoHide: true, handles: "s" });
 	//$("#assembly-dialog").resizable( { autoHide: true, handles: "n" });
@@ -688,6 +701,9 @@ function removeWatch() {
 
 lastCycleUpdate = { time: 0, cycle: 0 };
 function updateCycles() {
+	// bail if we're still on the same cycle
+	if(lastCycleUpdate.cycle == emulator.CPU_CYCLE) return;
+	
 	var val = "";
 	
 	if(emulator.CPU_CYCLE > 0) {
@@ -697,7 +713,10 @@ function updateCycles() {
 			var speed = (emulator.CPU_CYCLE - lastCycleUpdate.cycle) / (now - lastCycleUpdate.time);
 			lastCycleUpdate.time = now;
 			lastCycleUpdate.cycle = emulator.CPU_CYCLE;
-			val = Math.round(speed) + " kHz | " + val;
+			if(speed >= 1)
+				val = Math.round(speed) + " kHz | " + val;
+			else 
+				val = Math.round(speed*1000) + " Hz | " + val;
 		}
 	}
 	

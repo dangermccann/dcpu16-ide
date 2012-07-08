@@ -7,16 +7,45 @@ function HMD2043(_emulator) {
 	this.emulator = _emulator;
 	this.fullStrokeTime = 200;	// ms
 	this.spindleSpeed = 0.005;	// revolutions per millisecond
+	this.media = null;
+	
+	this.canvas = document.createElement("canvas");
+	this.canvas.width = 133;
+	this.canvas.height = 33;
+	this.canvas.style.backgroundColor = "#999999";
+	this.canvas.className = "hmd2043";
+	document.body.appendChild(this.canvas);
+	this.context = this.canvas.getContext('2d');
+	
+	this.images = { 
+		"background": Utils.createImage("/images/hmd2043_bg.png"),
+		"media": Utils.createImage("/images/hmd2043_media.png"),
+		"led": Utils.createImage("/images/hmd2043_led.png")
+	};
+	var _this = this;
+	$(this.images["background"]).load(function() { 
+		_this.draw();
+	});
 }
 
 HMD2043.prototype.init = function() { 
 	this.deviceFlags = 0;
-	this.media = null;
 	this.lastInterruptType = HMD2043.InterruptType.NONE;
 	this.lastInterruptStatus = HMD2043.Status.ERROR_NONE;
 	this.interruptMessage = 0xFFFF;
 	this.operationPending = false;
 	this.currentSector = 0;
+	this.draw();
+}
+
+HMD2043.prototype.draw = function() {
+	this.context.drawImage(this.images["background"], 0, 0, this.canvas.width, this.canvas.height);
+	
+	if(this.media)
+		this.context.drawImage(this.images["media"], 9, 19, 118, 4);
+		
+	if(this.operationPending)
+		this.context.drawImage(this.images["led"], 98, 4, 8, 4);
 }
 
 HMD2043.prototype.interrupt = function() { 
@@ -91,6 +120,7 @@ HMD2043.prototype.mediaStatusChanged = function() {
 		this.lastInterruptStatus = HMD2043.Status.ERROR_NONE;
 		this.emulator.interrupt(this.interruptMessage);
 	}
+	this.draw();
 }
 
 HMD2043.prototype.setStatus = function(status) {
@@ -115,9 +145,10 @@ HMD2043.prototype.mediaOperation = function(operation, startSector, numSectors, 
 		this.setStatus(HMD2043.Status.ERROR_PENDING);
 	}
 	else if(this.media) { 
-		this.operationPending = true;
 		var _this = this;
 		if(this.isValidSector(startSector) && this.isValidSector(startSector+numSectors-1)) {
+			
+			this.operationPending = true;
 			
 			this.seek(startSector, function() { 
 				var opTime = Math.round(1 / (_this.spindleSpeed * _this.media.sectorsPerTrack) * numSectors);
@@ -146,10 +177,12 @@ HMD2043.prototype.mediaOperation = function(operation, startSector, numSectors, 
 					
 					if(callback)
 						callback();
+						
+					_this.draw();
 				}, opTime);
 			});
 		
-			
+			this.draw();
 		}
 		else this.setStatus(HMD2043.Status.ERROR_INVALID_SECTOR);
 	}
@@ -176,8 +209,11 @@ HMD2043.prototype.write = function(startSector, numSectors, offset, callback) {
 	this.mediaOperation(HMD2043.Operations.WRITE_SECTORS, startSector, numSectors, offset, callback);
 }
 
-HMD2043.prototype.mediaOperationCallback = function() { 
+HMD2043.prototype.getDOMElement = function() {
+	return this.canvas;
 }
+
+
 
 HMD2043.Operations = {
 	QUERY_MEDIA_PRESENT: 0,
@@ -227,7 +263,8 @@ HMU1440.prototype.read = function(startSector, numSectors) {
 	var data = new Array(numSectors * this.wordsPerSector);
 	for(var i = 0; i < numSectors; i++) {
 		for(var j = 0; j < this.wordsPerSector; j++) {
-			data[i * this.wordsPerSector + j] = this.sectors[startSector + i][j];
+			var val = this.sectors[startSector + i] ? this.sectors[startSector + i][j] : 0;
+			data[i * this.wordsPerSector + j] = val;
 		}
 	}
 	return data;

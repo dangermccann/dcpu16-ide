@@ -53,9 +53,9 @@
 
 /* Component containers
 ----------------------------------*/
-.ui-widget { font-family: Courier; font-size: 1.1em; }
+.ui-widget { font-family: courier, 'courier new', Lucidatypewriter, monospace, fixed; font-size: 1.1em; }
 .ui-widget .ui-widget { font-size: 1em; }
-.ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button { font-family: Courier; font-size: 1em; }
+.ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button { font-family: courier, 'courier new', Lucidatypewriter, monospace, fixed;  font-size: 1em; }
 .ui-widget-content { border: 1px solid #4a4a4a; background: #1f1f1f url(images/ui-bg_flat_55_1f1f1f_40x100.png) 50% 50% repeat-x; color: #ffffff; }
 .ui-widget-content a { color: #ffffff; }
 .ui-widget-header { border: 1px solid #000000; background: #9fda58 url(images/ui-bg_white-lines_85_9fda58_40x100.png) 50% 50% repeat; color: #000000; font-weight: bold; }

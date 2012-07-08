@@ -19,7 +19,7 @@
 		<script type="text/javascript" src="javascript/ide.js"></script>
 		<script type="text/javascript">
 		  var _gaq = _gaq || [];
-		  //_gaq.push(['_setAccount', 'UA-32543076-1']);
+		  _gaq.push(['_setAccount', 'UA-32543076-1']);
 		  _gaq.push(['_trackPageview']);
 
 		  (function() {
@@ -58,33 +58,36 @@
 		
 		<div>
 		
-			<div class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right:0px; height:255px; top: 50px;">
+			<div class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right:0px; height:275px; top: 45px;">
 				<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
 					<span class="ui-dialog-title">Emulator</span>
 					<div class="right" id="cycles" style="margin-top: 2px"></div>
 				</div>
 				<div style="height: auto; width: auto;" class="ui-dialog-content ui-widget-content">
 					<div id="monitor"></div>
+					<div class="left" id="media-drive"></div>
+					<div id="toggle_media_button" class="left mini-button">Insert Media</div>
+					<div class="clear"></div>
 				</div>
 			</div>
 			
 			
 			<div id="editing_windows">
-				<div id="source-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right: 310px; left: 0px; bottom: 220px; top: 50px; width: auto;">
+				<div id="source-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right: 310px; left: 0px; bottom: 190px; top: 45px; width: auto;">
 					<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
 						<span id="editor_file_name" class="ui-dialog-title">Source</span>
 					</div>
 					<div id="editor" class="ui-dialog-content ui-widget-content"></div>
 				</div>
 				
-				<div id="assembly-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="left: 0px; bottom: 0px; height: 210px; right: 310px; width: auto;">
+				<div id="assembly-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="left: 0px; bottom: 0px; height: 180px; right: 310px; width: auto;">
 					<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
 					  <span class="ui-dialog-title">Assembly Result</span>
 					</div>
 					<div id="assembly" class="dialog_contents ui-dialog-content ui-widget-content scrolling_contents"></div>
 				</div>
 				
-				<div id="ouput-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right:0px; width: 300px; bottom: 0px; top: 310px;">
+				<div id="ouput-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right:0px; width: 300px; bottom: 0px; top: 330px;">
 					<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
 					  <span class="ui-dialog-title">Output</span>
 					</div>
@@ -94,7 +97,7 @@
 			</div>
 			
 			<div id="debugging_windows" style="display: none">
-				<div id="listing-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right: 310px; left: 0px; bottom: 220px; top: 50px; width: auto;">
+				<div id="listing-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right: 310px; left: 0px; bottom: 220px; top: 45px; width: auto;">
 					<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
 						<span class="ui-dialog-title">Listing</span>
 					</div>
@@ -114,7 +117,7 @@
 					</div>
 				</div>
 				
-				<div id="registers-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right:0px; width: 300px; height: 246px; top: 310px;">
+				<div id="registers-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right:0px; width: 300px; height: 246px; top: 330px;">
 					<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
 					  <span class="ui-dialog-title">Registers</span>
 					</div>
@@ -218,7 +221,7 @@
 					</div>
 				</div>
 			
-				<div id="watches-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right:0px; width: 300px; bottom: 0px; top: 566px;">
+				<div id="watches-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right:0px; width: 300px; bottom: 0px; top: 586px;">
 					<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
 					  <span class="ui-dialog-title">Watches</span>
 					  <div id="watches_remove_button" class="right titlebar-icon"><div class="ui-icon ui-icon-minusthick"></div></div>

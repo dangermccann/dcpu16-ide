@@ -235,8 +235,20 @@ Utils = {
 		var hex = Number(d).toString(16);
 		hex = "000000".substr(0, 6 - hex.length) + hex; 
 		return "#" + hex;
+	},
+	
+	createImage: function(src) {
+		var img = new Image();
+		img.src = src;
+		return img;
 	}
 
+};
+
+Speeds = {
+	"100 kHz": { "delayFrequency": 1000, "delayTime": 1 },
+	"100 Hz": { "delayFrequency": 10, "delayTime": 100 },
+	"10 Hz": { "delayFrequency": 1, "delayTime": 100 },
 };
 
 /**
@@ -249,6 +261,7 @@ function Emulator() {
 
 	this.async = true;
 	this.verbose = false;
+	this.currentSpeed = Speeds["100 kHz"];
 
 	this.CPU_CYCLE = 0;
 	this.RAM = [];
@@ -675,9 +688,9 @@ function Emulator() {
 	
 	this.runAsync = function() {
 		while(true) {
-			if(Math.floor(_this.CPU_CYCLE / 1000) > _this.asyncSteps) {
+			if(Math.floor(_this.CPU_CYCLE / _this.currentSpeed.delayFrequency) > _this.asyncSteps) {
 				_this.asyncSteps++;
-				setTimeout(_this.runAsync, 8);
+				setTimeout(_this.runAsync, _this.currentSpeed.delayTime);
 				break;
 			}
 			else {
@@ -776,8 +789,8 @@ function Emulator() {
 		if(this.Registers.IA.get() != 0) {
 			this.interruptQueueingEnabled = true;
 			this.Registers.SP.push(this.Registers.PC.get());	// push PC onto the stack
-			this.Registers.SP.push(this.Registers.A.get());	// followed by pusing A to the stack
-			this.Registers.PC.set(this.Registers.IA.get());	// set PC to IA
+			this.Registers.SP.push(this.Registers.A.get());		// followed by pusing A to the stack
+			this.Registers.PC.set(this.Registers.IA.get());		// set PC to IA
 			this.Registers.A.set(message);						// set A to the interrupt message
 		}
 		else {

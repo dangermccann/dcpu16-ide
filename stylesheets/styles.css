@@ -1,6 +1,7 @@
 body { 
 	font-family: courier, 'courier new', Lucidatypewriter, monospace, fixed; 
-	font-size: 14px;
+	/*Monaco, "Menlo", "Courier New", monospace*/
+	font-size: 12px;
 	background: #000000;
 	margin: 0px; 
 	padding: 0px;
@@ -33,16 +34,17 @@ textarea {
 
 #editor {
 	position: absolute; 
-	top: 41px; 
+	top: 31px; 
 	left: 4px; 
 	right: 4px; 
-	bottom: 4px; 
+	bottom: 1px; 
 	padding: 0 !important; 
 	overflow: hidden !important;
 }
 
 .ace_editor {
-	font-size: 14px !important;
+	font-size: 12px !important;
+	font-family: courier, 'courier new', Lucidatypewriter, monospace, fixed !important; 
 }
 
 .titlebar-icon {
@@ -58,6 +60,25 @@ textarea {
 .titlebar-icon:hover { 
 	background: rgba(255, 255, 255, 0.8);
 }
+
+.mini-button {
+	cursor: pointer;
+	margin-top: 6px;
+	margin-left: 14px;
+	border: 1px solid #ffffff;
+	margin-right: 3px;
+	background: rgba(255, 255, 255, 0.5);
+	width: 100px;
+	text-align: center;
+	height: 16px;
+	color: #ffffff;
+}
+
+.mini-button:hover { 
+	background: rgba(255, 255, 255, 0.8);
+	color: #666666;
+}
+
 
 .dialog_contents {
 	position: absolute !important; 
@@ -279,9 +300,9 @@ textarea {
 	cursor: pointer;
 }
 #watches_list li { 
-	margin: 3px; 
+	margin: 2px; 
 	padding: 4px 4px 6px 4px; 
-	height: 14px; 
+	height: 12px; 
 }
 
 #watches_list .watch_key { 
@@ -301,4 +322,8 @@ textarea {
 	color: white;
 	border: 1px solid #DDD;
 	width: 280px;
+}
+
+#media-drive {
+	margin-left: 6px;
 }

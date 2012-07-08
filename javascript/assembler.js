@@ -187,7 +187,7 @@ Assembler =  {
 	compileArgument: function(tokens, start, lineNumber, labels) {
 		var argument = new AssemblerArgument();
 		var k;
-		var openBracketCount = 0, closeBracketCount = 0;
+		var openBracketCount = 0, closeBracketCount = 0, netBracketCount = 0;
 		var lastOperator = null;
 		var originalLength = tokens.length;
 		
@@ -272,10 +272,14 @@ Assembler =  {
 			else if(token.type == "open_bracket") {
 				argument.memoryTarget = true;
 				openBracketCount++;
+				netBracketCount++;
+				if(netBracketCount > 1) this.throwInvalid(lineNumber, null, "Unexpected [");
 			}
 			else if(token.type == "close_bracket") {
 				if(lastOperator != null) this.throwInvalid(lineNumber, token);
 				closeBracketCount++;
+				netBracketCount--;
+				if(netBracketCount < 0) this.throwInvalid(lineNumber, null, "Unexpected ]");
 			}
 			else if(token.type == "operator") {
 				if(lastOperator != null) this.throwInvalid(lineNumber, token);
