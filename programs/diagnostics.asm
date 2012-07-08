@@ -179,26 +179,36 @@ SET Y, media_test_pending
 JSR draw_media_test_line
 
 ; read a few sectors from the media
-SET A, 0x10
-SET B, 0x10
-SET C, 16
-SET X, 0x2048
+SET A, 0x10 ; READ_SECTORS
+SET B, 0x10 ; inital sector
+SET C, 16   ; number of sectors
+SET X, 0x2048 ; memory offset to place result into
 HWI, [drive_index]
 SET PC, POP ; return
 
 :interrupt_handler
 IFE A, 0x4cae 
 JSR media_interrupt_handler
-SET A, POP
-SET PC, POP
+RFI A
 
 :media_interrupt_handler
+SET PUSH, B
+SET PUSH, C
+SET PUSH, I
+SET PUSH, J
+SET PUSH, X
+SET PUSH, Y
+SET PUSH, Z
+
 SET A, 4; QUERY_INTERRUPT_TYPE
 HWI, [drive_index]
 
+IFE B, 1 ;  MEDIA_STATUS
+SET [media_test_state], 0 ; media status changed, reset state
+
 ; bail if this is not the read complete message
 IFN B, 2 ; READ_COMPLETE
-SET PC, POP
+SET PC, exit_media_interrupt_handler
 
 IFE A, 0 ; no error
 SET Y, media_test_success
@@ -208,6 +218,14 @@ SET Y, media_test_fail
 
 JSR draw_media_test_line
 
+:exit_media_interrupt_handler
+SET Z, POP
+SET Y, POP
+SET X, POP
+SET J, POP
+SET I, POP
+SET C, POP
+SET B, POP
 SET PC, POP
 
 ; Y = address of message to display
