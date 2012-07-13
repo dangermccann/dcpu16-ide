@@ -338,9 +338,9 @@ Assembler =  {
 					else {
 						if(command != null) {
 							var arg = this.compileArgument(line, j, i+1, null);
-							if(arg.nextWord) 
+							if(arg.nextWord != null) 
 								offset++;
-								j += arg.tokenCount;
+							j += arg.tokenCount;
 						}
 						else if(dat != null) {
 							// data blocks
