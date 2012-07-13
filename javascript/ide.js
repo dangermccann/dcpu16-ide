@@ -6,6 +6,7 @@ var LINE_HEIGHT = 14;
 var userData;
 var readOnly = false;
 var mediaDrive;
+var delayedAssembleTimeout = null;
 
 urlParams = {};
 (function () {
@@ -37,6 +38,7 @@ function init() {
 	$("#reset_button").button({ icons: { primary: "ui-icon-arrowrefresh-1-s" } }).hide();
 	$("#clone_button").button({ icons: { primary: "ui-icon-copy" } }).hide();
 	$("#about_button").button({ icons: { primary: "ui-icon-help" } });
+	$("#settings_button").button({ icons: { primary: "ui-icon-gear" } });
 	
 	$("#about_dialog").dialog({ 
 		modal: true, 
@@ -82,6 +84,25 @@ function init() {
 		}
 	});
 	
+	$("#settings_dialog").dialog({ 
+		modal: true, 
+		autoOpen: false, 
+		resizable: false,
+		minWidth: 340,
+		buttons: { 
+			"Close": function() {  
+				$(this).dialog("close"); 
+				editor.focus();
+			}
+		} 
+	});
+	$("#cpu_speed_values").selectable({
+		selected: function(event, ui) { 
+			emulator.setSpeed(ui.selected.innerHTML);
+		}
+	});
+	$("#cpu_speed_values").children().first().addClass("ui-selected");
+	
 	
 	$("#listing").scroll(updateDebuggerLine);
 	$("#memory_container").scroll(updateMemoryWindow);
@@ -112,8 +133,14 @@ function init() {
 	editor.setHighlightActiveLine(false);
 	editor.resize();
 	editor.getSession().setUseSoftTabs(true);
+	
 	editor.getSession().on('change', function() { 
-		assemble();
+		if(delayedAssembleTimeout)
+			clearTimeout(delayedAssembleTimeout);
+		delayedAssembleTimeout = setTimeout(function() { 
+			assemble();
+			delayedAssembleTimeout = null;
+		}, 500);
 	});
 	
 	editor.renderer.on("gutterclick", function(e){
@@ -327,6 +354,11 @@ function clone() {
 	_gaq.push(['_trackEvent', "editor", "clone", programId]);
 }
 
+function openSettings() {
+	$("#settings_dialog").dialog("open");
+	_gaq.push(['_trackEvent', "debugger", "settings"]);
+}
+
 function randomId() {
 	return ((new Date()).getTime() + Math.round((Math.random()*1000000000000))).toString(36);
 }
@@ -364,6 +396,12 @@ function gotoLine(line) {
 }
 
 function startDebugger() {
+	if(delayedAssembleTimeout) {
+		clearTimeout(delayedAssembleTimeout);
+		delayedAssembleTimeout = null;
+		assemble();
+	}
+
 	if(userData.fileSaved)
 		save();
 

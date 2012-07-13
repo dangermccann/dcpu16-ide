@@ -327,3 +327,29 @@ textarea {
 #media-drive {
 	margin-left: 6px;
 }
+
+.settings_label {
+	float: left;
+	width: 110px;
+}
+
+.settings_value {
+	float: left;
+	width: 200px;
+}
+
+#cpu_speed_values span  {
+	padding: 4px;
+	border: 1px solid #ffffff;
+	cursor: pointer;
+}
+
+#cpu_speed_values .ui-selecting { 
+	background: #dbffb0; 
+	color: black; 
+}
+#cpu_speed_values .ui-selected { 
+	background: #9fda58; 
+	color: black; 
+
+}

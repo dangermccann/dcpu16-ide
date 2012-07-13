@@ -54,6 +54,7 @@
 			<button id="post_button" onclick="post()">Post</button>
 			
 			<button id="about_button" class="right" onclick="about()">About</button>
+			<button id="settings_button" class="right" onclick="openSettings()">Settings</button>
 		</div>
 		
 		<div>
@@ -257,6 +258,18 @@
 			<p>
 				<ol id="selectable_file_list">
 				</ol>
+			</p>
+		</div>
+		
+		<div id="settings_dialog" title="Settings">
+			<p>
+				<div class="settings_label">CPU Speed:</div>
+				<div id="cpu_speed_values" class="settings_value">
+					<span>100 kHz</span>
+					<span>100 Hz</span>
+					<span>10 Hz</span>
+				</div>
+				<div class="clear"></div>
 			</p>
 		</div>
 		

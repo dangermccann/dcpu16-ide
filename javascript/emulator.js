@@ -814,6 +814,16 @@ function Emulator() {
 	this.attachedDebugger = null;
 	this.attachDebugger = function(_debugger) {
 		this.attachedDebugger = _debugger;
+	};
+	
+	this.setSpeed = function(newSpeed) {
+		var speed = Speeds[newSpeed];
+		if(!speed) { 
+			console.log("invalid speed " + newSpeed); 
+			return; 
+		}
+		emulator.currentSpeed = speed;
+		emulator.asyncSteps = emulator.CPU_CYCLE / emulator.currentSpeed.delayFrequency;
 	}
 	
 	this.devices = [];
