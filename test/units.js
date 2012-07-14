@@ -83,7 +83,7 @@ function units() {
 		equal(e.Registers.C.get(), 3, "Register C is 3");
 		equal(e.Registers.I.get(), 0, "Register I is 0");
 		equal(e.Registers.J.get(), 1, "Register J is 1");
-		equal(e.Registers.SP.get(), 0xfffb, "Register SP is 0xfffb");
+		equal(e.Registers.SP.get(), 0xfffc, "Register SP is 0xfffc");
 	});
 	
 	

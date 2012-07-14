@@ -293,12 +293,14 @@ function Emulator() {
 
 	this.Registers.SP.push = function(val) {
 		this.contents =  Utils.to16BitSigned(this.contents - 1);
-		//this.contents =  this.contents - 1;
 		this.emulator.RAM[this.contents] = val;
 	};
 	this.Registers.SP.pop = function() {
 		if(this.contents == 0) throw "Stack underflow";
-		return this.emulator.RAM[this.contents++] || 0;
+		val = this.emulator.RAM[this.contents] || 0;
+		this.emulator.RAM[this.contents] = 0;
+		this.contents = (this.contents + 1) & 0xffff;
+		return val;
 	};
 
 	
@@ -634,7 +636,7 @@ function Emulator() {
 		for(var r in this.Registers) {
 			this.Registers[r].set(0);
 		}
-		this.Registers.SP.set(0xffff);
+		//this.Registers.SP.set(0xffff);
 		
 		for(var i = 0; i < this.devices.length; i++) {
 			this.devices[i].init();

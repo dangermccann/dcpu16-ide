@@ -106,6 +106,7 @@ function init() {
 	
 	$("#listing").scroll(updateDebuggerLine);
 	$("#memory_container").scroll(updateMemoryWindow);
+	$("#memory_sizer").height(0x2003 * LINE_HEIGHT);
 	
 	$(".register-memory-value").click(function() { 
 		gotoMemoryLocation(parseInt($(this).html()));
@@ -636,7 +637,7 @@ function updateRegisterWindow() {
 function updateMemoryWindow() {
 	
 	var startOffset = Math.floor($("#memory_container").scrollTop() / LINE_HEIGHT) * 8;
-	startOffset = Math.min(startOffset, 0xffb0);
+	startOffset = Math.min(startOffset, 0xffd0);
 	
 	var memHtml = "";
 	for(var i = 0; i < 10; i++) {
