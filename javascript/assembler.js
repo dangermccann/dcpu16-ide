@@ -120,6 +120,25 @@ Assembler =  {
 		else return 0x100; // placeholder -- TODO: what if this gets reduced to a literal next time through?
 		
 	},
+	
+	getRegisterValue: function(register, value, valuePlusNextWord) { 
+		var val = eval("REGISTER_" + register);
+		
+		if(register != "SP") {
+			if(value) 
+				val += Values.REGISTER_VALUE_OFFSET;
+			if(valuePlusNextWord) 
+				val += Values.REGISTER_NEXT_WORD_OFFSET;
+		}
+		else {
+			if(value)
+				val = Values.SP_OFFSET + 1;	// 0x19
+			if(valuePlusNextWord)
+				val = Values.SP_OFFSET + 2;	// 0x1a
+		}
+		return val;
+		
+	},
 
 	evaluateExpression: function(tokens, start, lineNumber, labels) {
 		var k;
@@ -219,7 +238,7 @@ Assembler =  {
 						if(lastOperator == null) this.throwInvalid(lineNumber, token, "Missing operator");
 						if(lastOperator != "+") this.throwInvalid(lineNumber, token, "The " + lastOperator + " operator can not be used when referencing a register");
 						
-						argument.value = eval("REGISTER_" + argument.expressionRegister) + Values.REGISTER_NEXT_WORD_OFFSET;
+						argument.value = this.getRegisterValue(argument.expressionRegister, false, true);
 						argument.nextWord = argument.expressionValue;
 						lastOperator = null;
 					}
@@ -245,7 +264,7 @@ Assembler =  {
 			}
 			else if(token.type == "register") {
 				if(argument.expressionValue == null) {
-					argument.value = eval("REGISTER_" + token.lexeme) + (argument.memoryTarget ? Values.REGISTER_VALUE_OFFSET : 0);
+					argument.value = this.getRegisterValue(token.lexeme, argument.memoryTarget, false);
 					argument.expressionRegister = token.lexeme;
 				}
 				else {
@@ -253,7 +272,7 @@ Assembler =  {
 					if(argument.expressionRegister) this.throwInvalid(lineNumber, token);
 					if(lastOperator != "+") this.throwInvalid(lineNumber, token);
 					
-					argument.value = eval("REGISTER_" + token.lexeme) + Values.REGISTER_NEXT_WORD_OFFSET;
+					argument.value = this.getRegisterValue(token.lexeme, false, true);
 					argument.nextWord = argument.expressionValue;
 					argument.expressionRegister = token.lexeme;
 					lastOperator = null;
