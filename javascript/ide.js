@@ -426,18 +426,24 @@ function startDebugger() {
 	
 	$("#listing").html(listing.htmlFormat());
 	
-	$("#listing").find(".offset").click(function(evt) {
-		var lineNumber = parseInt(this.id.substr("offset_line_".length));
-		toggleBreakpoint(lineNumber);
-	});
-	$("#listing").find(".hexidecimal").click(function(evt) {
-		gotoMemoryLocation(parseInt($(this).text()));
-	});
-	$("#listing").find(".label_ref").click(function(evt) {
-		var offset = listing.labels[$(this).text()];
-		var top = getLineTop(calculateLine(offset));
-		scrollListingTo(top, true);
-	});
+	// for very large programs, this may fail because we'll exceed the maximum call stack size
+	try {
+		$("#listing").find(".offset").click(function(evt) {
+			var lineNumber = parseInt(this.id.substr("offset_line_".length));
+			toggleBreakpoint(lineNumber);
+		});
+		$("#listing").find(".hexidecimal").click(function(evt) {
+			gotoMemoryLocation(parseInt($(this).text()));
+		});
+		$("#listing").find(".label_ref").click(function(evt) {
+			var offset = listing.labels[$(this).text()];
+			var top = getLineTop(calculateLine(offset));
+			scrollListingTo(top, true);
+		});
+	}
+	catch(e) { 
+		console.log(e);
+	}
 	
 	for(var bp in _debugger.breakpoints) {
 		$("#offset_line_"+_debugger.breakpoints[bp]).addClass("breakpoint");
