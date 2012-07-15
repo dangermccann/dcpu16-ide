@@ -6,6 +6,7 @@ body {
 	margin: 0px; 
 	padding: 0px;
 }
+
 .right {
 	float: right;
 }
@@ -263,6 +264,10 @@ textarea {
 
 #about_dialog {
 	text-align: center;
+}
+
+#registers {
+	margin-left: 15px;
 }
 
 #selectable_file_list .ui-selecting { 

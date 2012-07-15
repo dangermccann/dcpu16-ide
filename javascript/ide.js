@@ -446,9 +446,27 @@ function startDebugger() {
 			gotoMemoryLocation($(this).text());
 		});
 		$("#listing").find(".label_ref").click(function(evt) {
+			if(evt.ctrlKey) {
+				// add label as a watch
+				userData.watches.splice(0, 0, $(this).text());
+				persist();
+				refreshWatches();
+			}
+			else {
+				// goto location in listing
+				var offset = listing.labels[$(this).text()];
+				var top = getLineTop(calculateLine(offset));
+				scrollListingTo(top, true);
+			}
+		});
+		$("#listing").find(".label_ref").mouseenter(function(evt) {
 			var offset = listing.labels[$(this).text()];
-			var top = getLineTop(calculateLine(offset));
-			scrollListingTo(top, true);
+			if(offset) {
+				var tip = $(this).text() + "\n";
+				tip += Utils.hex2(offset) + " [" + Utils.hex2(emulator.RAM[offset]) + "]";
+				tip += "\n(ctrl-click to add watch)";
+				$(this).attr("title", tip);
+			}
 		});
 	}
 	catch(e) { 
