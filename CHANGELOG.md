@@ -1,4 +1,11 @@
 
+0.5
+===
+Added settings dialog with CPU speed setting
+Added "goto location" in memory window
+Added tooltips 
+Enhanced about box
+
 0.4
 ===
 Added watch window in debugger
