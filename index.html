@@ -39,22 +39,22 @@
 		 
 	<body>
 		<div id="toolbar" class="ui-widget-header ui-corner-all">
-			<button id="run_button" onclick="run()">Run</button>
-			<button id="step_button" onclick="step()">Step</button>
-			<button id="stop_button" onclick="stopDebugger()">Stop</button>
-			<button id="pause_button" onclick="pauseDebugger()">Pause</button>
-			<button id="reset_button" onclick="reset()">Reset</button>
-			<button id="clone_button" onclick="clone()" style="display:none">Clone</button>
+			<button id="run_button" onclick="run()" title="Runs the program">Run</button>
+			<button id="step_button" onclick="step()" title="Steps over a single operation">Step</button>
+			<button id="stop_button" onclick="stopDebugger()" title="Stops the debugger and returns to the editor">Stop</button>
+			<button id="pause_button" onclick="pauseDebugger()" title="Pauses the emulator">Pause</button>
+			<button id="reset_button" onclick="reset()" title="Resets the emulator and starts the program from the beginning">Reset</button>
+			<button id="clone_button" onclick="clone()" title="Clones this project so that it is editable" style="display:none">Clone</button>
 			
-			<button id="debug_button" onclick="startDebugger()">Debug</button>
+			<button id="debug_button" onclick="startDebugger()" title="Starts the debugger">Debug</button>
 			<div style="margin-left: 12px; width: 1px; display: inline-block;"></div>
-			<button id="save_button" onclick="save()">Save</button>
-			<button id="open_button" onclick="_open()">Open</button>
-			<button id="new_button" onclick="_new()">New</button>
-			<button id="post_button" onclick="post()">Post</button>
+			<button id="save_button" onclick="save()" title="Saves this program">Save</button>
+			<button id="open_button" onclick="_open()" title="Displays the Open dialog to open a previously saved file">Open</button>
+			<button id="new_button" onclick="_new()" title="Creates a new file">New</button>
+			<button id="post_button" onclick="post()" title="Posts this file to allow you to share it with others">Post</button>
 			
-			<button id="about_button" class="right" onclick="about()">About</button>
-			<button id="settings_button" class="right" onclick="openSettings()">Settings</button>
+			<button id="about_button" class="right" onclick="about()" title="Opens the About dialog">About</button>
+			<button id="settings_button" class="right" onclick="openSettings()" title="Opens the Settings dialog">Settings</button>
 		</div>
 		
 		<div>
@@ -65,9 +65,9 @@
 					<div class="right" id="cycles" style="margin-top: 2px"></div>
 				</div>
 				<div style="height: auto; width: auto;" class="ui-dialog-content ui-widget-content">
-					<div id="monitor"></div>
-					<div class="left" id="media-drive"></div>
-					<div id="toggle_media_button" class="left mini-button">Insert Media</div>
+					<div id="monitor" title="LEM1802 Low Energy Monitor"></div>
+					<div class="left" id="media-drive" title="HDM2043 Harold Media Drive"></div>
+					<div id="toggle_media_button" class="left mini-button" title="Inserts or ejects media from the HMD2043 drive.">Insert Media</div>
 					<div class="clear"></div>
 				</div>
 			</div>
@@ -110,7 +110,11 @@
 				
 				<div id="memory-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="left: 0px; bottom: 0px; height: 210px; right: 310px; width: auto;">
 					<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
-					  <span class="ui-dialog-title">Memory</span>
+					  <span class="ui-dialog-title" title="Displays the value of the emulator's RAM.">Memory</span>
+					  
+					  <div id="memory_goto_button" class="right titlebar-icon" title="Jump the memory window to the location of RAM entered in the text box."><div class="ui-icon ui-icon-circle-arrow-s"></div></div>
+					  <input id="memory_goto_input" type="text" class="right" />
+					  
 					</div>
 					<div id="memory_container" class="dialog_contents ui-dialog-content ui-widget-content scrolling_contents">
 						<div id="memory_sizer"></div>
@@ -120,7 +124,7 @@
 				
 				<div id="registers-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right:0px; width: 300px; height: 246px; top: 330px;">
 					<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
-					  <span class="ui-dialog-title">Registers</span>
+					  <span class="ui-dialog-title" title="The registers window shows the current value of all registers, as well as the value at the RAM locaiton of the register's value.">Registers</span>
 					</div>
 					<div id="registers" class="ui-dialog-content ui-widget-content dialog_contents scrolling_contents">
 						<div id="register-A">
@@ -224,9 +228,9 @@
 			
 				<div id="watches-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right:0px; width: 300px; bottom: 0px; top: 586px;">
 					<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
-					  <span class="ui-dialog-title">Watches</span>
-					  <div id="watches_remove_button" class="right titlebar-icon"><div class="ui-icon ui-icon-minusthick"></div></div>
-					  <div id="watches_add_button" class="right titlebar-icon"><div class="ui-icon ui-icon-plusthick"></div></div>
+					  <span class="ui-dialog-title" title="Watches allow you to see the value of a word in RAM while debugging.  To add a watch click the + button and enter a label or a numeric location in RAM.">Watches</span>
+					  <div id="watches_remove_button" class="right titlebar-icon" title="Remove the selected watch"><div class="ui-icon ui-icon-minusthick"></div></div>
+					  <div id="watches_add_button" class="right titlebar-icon" title="Add a watch.  Enter a label or memory location and the value in RAM will be displayed during debugging."><div class="ui-icon ui-icon-plusthick"></div></div>
 					</div>
 					<div id="watches">
 						<ol id="watches_list"></ol>
@@ -244,6 +248,7 @@
 			</p>
 			<p>DCPU-16 IDE is an assembler, debugger and emulator for <a href="http://0x10c.com" target="_tab">0x10c</a>.</p>
 			<p><a href="https://github.com/dangermccann/dcpu16-ide" target="_tab">Source code and documentation</a></p>
+			<p><a href="javascript:UserVoice.showPopupWidget();" title="Open feedback & support dialog (powered by UserVoice)">Feedback &amp; Support</a></p>
 		</div>
 
 		

@@ -109,9 +109,18 @@ function init() {
 	$("#memory_sizer").height(0x2003 * LINE_HEIGHT);
 	
 	$(".register-memory-value").click(function() { 
-		gotoMemoryLocation(parseInt($(this).html()));
+		gotoMemoryLocation($(this).html());
 	});
 	
+	$("#memory_goto_button").click(function() {  
+		gotoMemoryLocation($("#memory_goto_input").val());
+	});
+	
+	$("#memory_goto_input").keydown(function(event) { 
+		if(event.which == 13) { 
+			gotoMemoryLocation($("#memory_goto_input").val());
+		}
+	});
 	
 	$("#watches_add_button").click(function() {  
 		addWatch();
@@ -434,7 +443,7 @@ function startDebugger() {
 			toggleBreakpoint(lineNumber);
 		});
 		$("#listing").find(".hexidecimal").click(function(evt) {
-			gotoMemoryLocation(parseInt($(this).text()));
+			gotoMemoryLocation($(this).text());
 		});
 		$("#listing").find(".label_ref").click(function(evt) {
 			var offset = listing.labels[$(this).text()];
@@ -653,7 +662,9 @@ function updateMemoryWindow() {
 }
 
 function gotoMemoryLocation(location) {
-	$("#memory_container").scrollTop(Math.floor(location / 8) * LINE_HEIGHT);
+	var val = parseInt(location);
+	if(isNaN(val)) return;
+	$("#memory_container").scrollTop(Math.floor(val / 8) * LINE_HEIGHT);
 	updateMemoryWindow();
 }
 

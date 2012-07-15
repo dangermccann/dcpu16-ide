@@ -253,6 +253,14 @@ textarea {
 	white-space: nowrap;	
 }
 
+#memory_goto_input {
+	width: 60px;
+	font-size: 11px;
+	margin-top: 0px;
+	margin-right: 4px;
+	height: 14px;
+}
+
 #about_dialog {
 	text-align: center;
 }
