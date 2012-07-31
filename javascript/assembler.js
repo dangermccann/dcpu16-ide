@@ -4,6 +4,7 @@ Tokenizer = {
 	tokens: [
 		{ pattern: /^(;.*)/,						type: "comment"			},
 		{ pattern: /^\b(0x[0-9ABCDEF]+)\b/i,		type: "hexidecimal"		},
+		{ pattern: /^\b(0b[0-1]+)\b/i,				type: "binary"			},
 		{ pattern: /^\b([0-9]+)\b/,					type: "decimal"			},
 		{ pattern: /^(\".*\")/,						type: "string"			},
 		{ pattern: /^(:[0-9A-Za-z_]+)/,				type: "label_def"		},
@@ -51,7 +52,7 @@ Tokenizer = {
 						if(token.type == "command" || token.type == "reserved_word" || token.type == "register")
 							lexeme = lexeme.toUpperCase();
 							
-						tokenizedLine.push( { lexeme: lexeme, type: token.type } );
+						tokenizedLine.push( new Token(lexeme, token.type) );
 						
 						line = line.substr(lexeme.length)
 					}
@@ -67,6 +68,7 @@ Tokenizer = {
 			}
 			catch(err) { 
 				errors.push(err);
+				console.log(err);
 			}
 			
 			tokenizedLines.push(tokenizedLine);
@@ -98,6 +100,15 @@ Tokenizer = {
 			str += tokens[l].lexeme;
 		}
 		console.log(str);
+	}
+}
+
+function Token(lexeme, type) {
+	this.lexeme = lexeme;
+	this.type = type;
+	
+	this.isNumericLiteral = function() { 
+		return (this.type === "decimal" || this.type === "hexidecimal" || this.type === "binary");
 	}
 }
 
@@ -163,8 +174,8 @@ Assembler =  {
 					expressionStart = k;
 				expressionEnd = k;
 			}
-			else if(token.type === "decimal" || token.type === "hexidecimal" ) {
-				expressionStr += parseInt(token.lexeme);
+			else if(token.isNumericLiteral()) {
+				expressionStr += parseNumericLiteral(token.lexeme);
 				
 				if(expressionStart === -1)
 					expressionStart = k;
@@ -197,7 +208,7 @@ Assembler =  {
 			}
 			
 			// put the result back in the token array as a numeric literal
-			var newToken = { lexeme: expressionResult, type: "decimal" };
+			var newToken = new Token(expressionResult, "decimal");
 			tokens.splice(expressionStart, expressionEnd-expressionStart+1, newToken);
 		}
 		return tokens;
@@ -219,14 +230,14 @@ Assembler =  {
 			else if(token.type == "comma" || token.type == "comment") { 
 				break;
 			}
-			else if(token.type == "decimal" || token.type == "hexidecimal" || token.type == "label_ref") {
+			else if(token.isNumericLiteral() || token.type == "label_ref") {
 				if(argument.expressionRegister != null && argument.expressionValue != null) this.throwInvalid(lineNumber, token);
 				
 				var val;
 				if(token.type == "label_ref") {
 					val = this.getLabelValue(token, labels);
 				}
-				else val = parseInt(token.lexeme);
+				else val = parseNumericLiteral(token.lexeme);
 				
 				if(lastOperator != null && argument.expressionValue != null) {
 					this.throwInvalid(lineNumber, token);
@@ -363,7 +374,7 @@ Assembler =  {
 						}
 						else if(dat != null) {
 							// data blocks
-							if(token.type == "decimal" || token.type == "hexidecimal") {
+							if(token.isNumericLiteral()) {
 								offset++;
 							}
 							else if(token.type == "string") {
@@ -428,8 +439,8 @@ Assembler =  {
 						}
 						else if(dat != null) {
 							// data blocks
-							if(token.type == "decimal" || token.type == "hexidecimal") {
-								dat.push(parseInt(token.lexeme));
+							if(token.isNumericLiteral()) {
+								dat.push(parseNumericLiteral(token.lexeme));
 							}
 							else if(token.type == "string") {
 								// remove quotes 
@@ -559,4 +570,12 @@ function AssemblyError(message, line) {
 }
 AssemblyError.prototype = Error.prototype;
 
+function parseNumericLiteral(val) {
+	if(val.toString().indexOf("0b") === 0)
+		return parseInt(val.substr(2), 2);
+	else if(val.toString().indexOf("0x") === 0)
+		return parseInt(val);
+	else
+		return parseInt(val, 10);
+}
 

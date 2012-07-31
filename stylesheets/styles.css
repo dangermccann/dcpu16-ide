@@ -159,6 +159,9 @@ textarea {
 .decimal { 
 	color: #0077ff; 
 }
+.binary { 
+	color: #0077ff; 
+}
 .string { 
 	color: #007700;
 }
@@ -214,16 +217,16 @@ textarea {
 }
 
 .ace_numeric { 
-	color: #0077ff; 
+	color: #0077ff !important; 
 }
 .ace_hex { 
-	color: #3bd4d4; 
+	color: #3bd4d4 !important; 
 }
 .ace_string { 
 	color: #007700 !important;
 }
 .ace_library { 
-	color: #6666ff 
+	color: #6666ff;
 }
 .ace_keyword { 
 	color: #ffffff !important;  

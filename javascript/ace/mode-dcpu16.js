@@ -30,6 +30,7 @@ define('ace/mode/dcpu16_highlight_rules', function(require, exports, module) {
 			start: [ 
 				{ token: "comment", 			regex: "(;.*)" },
 				{ token: "constant.hex",		regex: "\\b(0x[0-9A-Fa-f]+)\\b" },
+				{ token: "constant.numeric",		regex: "\\b(0b[0|1]+)\\b" },
 				{ token: "constant.numeric",	regex: "\\b([0-9]+)\\b" },
 				{ token: "string", 				regex: "(\".*\")" },
 				{ token: "constant.library",	regex: "(:[0-9A-Za-z_]+)" },

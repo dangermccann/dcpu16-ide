@@ -670,10 +670,11 @@ function units() {
 					 ":my_label dat 1234 0x9876\n" +
 					 "  SUB [ 4 * 4 ] ; do some math \n" +
 					 "JSR imy_label\n" +
-					 "dat \"my string\", 0";
+					 "dat \"my string\", 0\n" +
+					 "SET B, 0b01101";
 		
 		var lines = Tokenizer.tokenize(input).lines;
-		equal(lines.length, 6, "6 lines tokenized");
+		equal(lines.length, 7, "7 lines tokenized");
 		equal(lines[0][0].type, "comment", "Line 1 comment");
 		equal(lines[1][0].type, "command", "Line 2 command");
 		equal(lines[1][2].type, "register", "Line 2 register");
@@ -690,7 +691,7 @@ function units() {
 		equal(lines[4][2].type, "label_ref", "Line 5 label_ref");
 		equal(lines[5][2].type, "string", "Line 6 string");
 		equal(lines[5][3].type, "comma", "Line 6 comma");
-		
+		equal(lines[6][5].type, "binary", "Line 7 binary");
 		
 	});
 	
@@ -750,6 +751,10 @@ function units() {
 		input =  "0xee << 3";
 		result = Assembler.evaluateExpression(Tokenizer.tokenize(input).lines[0], 0, 1);
 		equal(result[0].lexeme, 0x770);
+		
+		input =  "0b0011 + 0b1100";
+		result = Assembler.evaluateExpression(Tokenizer.tokenize(input).lines[0], 0, 1);
+		equal(result[0].lexeme, 0xf);
 	});
 	
 	
