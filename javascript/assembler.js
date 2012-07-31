@@ -161,8 +161,14 @@ Assembler =  {
 		for(k = start; k < tokens.length; k++) {
 			var token = tokens[k];
 			
-			if(token.type === "space") { }
+			if(token.type === "space") { 
+				continue;
+			}
 			else if(token.type == "comma" || token.type == "comment") { 
+				break;
+			}
+			else if(token.type === "register") {
+				expressionStr = "";	// can't evalute expressions containing variables
 				break;
 			}
 			else if(token.type === "operator") {
@@ -170,26 +176,20 @@ Assembler =  {
 			}
 			else if(token.type === "label_ref") {
 				expressionStr += this.getLabelValue(token, labels, lineNumber);
-				if(expressionStart === -1)
-					expressionStart = k;
-				expressionEnd = k;
 			}
 			else if(token.isNumericLiteral()) {
 				expressionStr += parseNumericLiteral(token.lexeme);
-				
-				if(expressionStart === -1)
-					expressionStart = k;
-				expressionEnd = k;
 			}
-			else if(token.type === "register") {
-				expressionStr = "";	// can't evalute expressions containing variables
-				break;
+			else {
+				continue;
 			}
+			
+			if(expressionStart === -1)
+				expressionStart = k;
+			expressionEnd = k;
 		}
 		
 		if(expressionStr.length > 0 && expressionStart != expressionEnd) {
-			// check for operator at end of expression
-			if(tokens[expressionEnd].type === "operator") this.throwInvalid(lineNumber, null, "Invalid expression near " + tokens[expressionStart].lexeme);
 		
 			// duplicate token array so we can modify it
 			var dupe = [];

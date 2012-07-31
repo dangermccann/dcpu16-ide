@@ -755,6 +755,10 @@ function units() {
 		input =  "0b0011 + 0b1100";
 		result = Assembler.evaluateExpression(Tokenizer.tokenize(input).lines[0], 0, 1);
 		equal(result[0].lexeme, 0xf);
+		
+		input =  "-2";
+		result = Assembler.evaluateExpression(Tokenizer.tokenize(input).lines[0], 0, 1);
+		equal(result[0].lexeme, Utils.to16BitSigned(-2));
 	});
 	
 	
