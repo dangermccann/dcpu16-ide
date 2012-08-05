@@ -214,7 +214,7 @@ Assembler =  {
 		return tokens;
 	},
 
-	compileArgument: function(tokens, start, lineNumber, labels) {
+	compileArgument: function(tokens, start, lineNumber, labels, argumentIndex) {
 		var argument = new AssemblerArgument();
 		var k;
 		var openBracketCount = 0, closeBracketCount = 0, netBracketCount = 0;
@@ -248,6 +248,7 @@ Assembler =  {
 					if(argument.expressionRegister != null) {
 						if(lastOperator == null) this.throwInvalid(lineNumber, token, "Missing operator");
 						if(lastOperator != "+") this.throwInvalid(lineNumber, token, "The " + lastOperator + " operator can not be used when referencing a register");
+						if(argument.expressionRegister == "PC") this.throwInvalid(lineNumber, token, "DCPU-16 does not allow addressing relative to PC");
 						
 						argument.value = this.getRegisterValue(argument.expressionRegister, false, true);
 						argument.nextWord = argument.expressionValue;
@@ -263,7 +264,10 @@ Assembler =  {
 				
 					// literal
 					var val32 = Utils.to32BitSigned(argument.expressionValue);
-					if(val32 >= -1 && val32 <= 30 && token.type != "label_ref") {
+					
+					// we can use the "shorthand" literal representation only if this is an 'a' value and
+					// not a label reference
+					if(val32 >= -1 && val32 <= 30 && token.type != "label_ref" && argumentIndex > 0) {
 						argument.value = Literals["L_"+val32];
 						argument.nextWord = null;
 					}
@@ -331,6 +335,7 @@ Assembler =  {
 		var offset = 0;
 		var output = new Listing();
 		var errorMap = {};
+		var argumentCount = 0;
 	
 		// perform a first pass to estimate the offset associated with each label
 		for(var i = 0; i < tokenizedLines.length; i++) {
@@ -338,6 +343,7 @@ Assembler =  {
 			
 			var command = null;
 			var dat = null;
+			argumentCount = 0;
 			
 			try {
 			
@@ -367,7 +373,8 @@ Assembler =  {
 					// handle arguments
 					else {
 						if(command != null) {
-							var arg = this.compileArgument(line, j, i+1, null);
+							var arg = this.compileArgument(line, j, i+1, null, argumentCount);
+							argumentCount++;
 							if(arg.nextWord != null) 
 								offset++;
 							j += arg.tokenCount;
@@ -409,6 +416,7 @@ Assembler =  {
 			var arguments = [];
 			var dat = null;
 			var bytes = [];
+			argumentCount = 0;
 			
 			try {
 				for(var j = 0; j < line.length; j++) {
@@ -432,7 +440,8 @@ Assembler =  {
 					// handle arguments
 					else {
 						if(command != null) {
-							var arg = this.compileArgument(line, j, i+1, output.labels);
+							var arg = this.compileArgument(line, j, i+1, output.labels, argumentCount);
+							argumentCount++;
 							if(arg.value != null)
 								arguments.push(arg);
 							j += arg.tokenCount;
