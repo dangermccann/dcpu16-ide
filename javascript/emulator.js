@@ -211,7 +211,7 @@ Utils = {
 	
 	hex2: function(num) {
 		//var str = Utils.to16BitSigned(num).toString(16);
-		str = (num).toString(16);
+		var str = (num).toString(16);
 		return "0x" + "0000".substr(str.length) + str;
 	},
 	
@@ -296,9 +296,11 @@ function Emulator() {
 		this.emulator.RAM[this.contents] = val;
 	};
 	this.Registers.SP.pop = function() {
-		if(this.contents == 0) throw "Stack underflow";
-		val = this.emulator.RAM[this.contents] || 0;
-		this.emulator.RAM[this.contents] = 0;
+		if(this.contents == 0) 
+			console.log("Warning: stack underflow");
+			
+		var val = this.emulator.RAM[this.contents] || 0;
+		this.emulator.RAM[this.contents] = 0;	// TODO: should the emualtor alter the memory location when it is POPed?
 		this.contents = (this.contents + 1) & 0xffff;
 		return val;
 	};
@@ -366,10 +368,10 @@ function Emulator() {
 			var aVal = a.getA(), bVal = b.getB();
 			b.set(aVal);
 			
-			if(a == this.emulator.Registers.PC && b == this.emulator.Registers.PC) {
-				// setting PC to itself terminates the application
-				this.emulator.Registers.PC.contents = Number.MAX_VALUE;
-			}
+			// TODO: some applications assume that setting PC to itself should terminate the application
+			//if(a == this.emulator.Registers.PC && b == this.emulator.Registers.PC) {
+			//	this.emulator.Registers.PC.contents = Number.MAX_VALUE;
+			//}
 		}),
 		
 		ADD: new Op(this, "ADD", OPERATION_ADD, 2, function(a, b) { 
@@ -811,6 +813,9 @@ function Emulator() {
 	
 	this.exit = function() {
 		console.log("Program completed in " + this.CPU_CYCLE + " cycles");
+		
+		if(this.attachedDebugger)
+			this.attachedDebugger.onExit();
 	};
 	
 	this.attachedDebugger = null;
@@ -869,7 +874,8 @@ Debugger.prototype.run = function() {
 };
 Debugger.prototype.step = function() { 
 	if(this.emulator.paused) {
-		this.emulator.step();
+		if(!this.emulator.step())
+			this.emulator.exit();
 	}
 };
 Debugger.prototype.pause = function() { 
@@ -880,5 +886,6 @@ Debugger.prototype.pause = function() {
 Debugger.prototype.onStep = function(location) { };
 Debugger.prototype.onPaused = function(location) { };
 Debugger.prototype.onInstruction = function(location) { };
+Debugger.prototype.onExit = function() { };
 
 

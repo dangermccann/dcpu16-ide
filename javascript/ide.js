@@ -190,6 +190,9 @@ function init() {
 	_debugger.onInstruction = function(location) {
 		
 	}
+	_debugger.onExit = function() {
+		programComplete();
+	}
 	
 	setInterval(realtimeUpdate, 50);
 	
@@ -563,6 +566,10 @@ function updateDebugger() {
 	}
 }
 
+function programComplete() {
+	$("#debugger_line").hide();
+}
+
 function realtimeUpdate() {
 	if(!listing)  return;
 	if(emulator.paused) return;
@@ -615,7 +622,7 @@ function calculateLine(location) {
 }
 
 function getLineTop(line) {
-	return line*LINE_HEIGHT + $("#listing").position().top + 2;
+	return line*LINE_HEIGHT + $("#listing").position().top + 1;
 }
 
 function updateDebuggerLine() {
