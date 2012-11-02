@@ -678,7 +678,16 @@ function updateMemoryWindow() {
 		memHtml += "<div class=\"memory_offset\">" + Utils.hex2(startOffset + i*8) + "</div>";
 		memHtml += "<div class=\"memory_line\">"
 		for(var j = 0; j < 8; j++) {
-			memHtml += Utils.hex2(emulator.RAM[startOffset + i*8 + j] || 0) + " ";
+			var offset = startOffset + i*8 + j;
+			var span = "";
+			if(offset == emulator.Registers.PC.get())
+				span = "<span class=\"PC\">";
+			else if(offset == emulator.Registers.SP.get())
+				span = "<span class=\"SP\">";
+			memHtml += span + Utils.hex2(emulator.RAM[offset] || 0) + " ";
+			if(span.length > 0)
+				memHtml += "</span>";
+			
 		}
 		memHtml += "</div><div class=\"clear\"></div>";
 	}
