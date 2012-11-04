@@ -485,51 +485,51 @@ function Emulator() {
 		IFB: new Op(this, "IFB", OPERATION_IFB, 2, function(a, b) { 
 			var aVal = a.getA(), bVal = b.getB();
 			if((bVal & aVal) != 0) { }
-			else this.emulator.skipInstruction(true);
+			else this.emulator.skipInstruction();
 			
 		}),
 		
 		IFC: new Op(this, "IFC", OPERATION_IFC, 2, function(a, b) { 
 			var aVal = a.getA(), bVal = b.getB();
 			if((bVal & aVal) === 0) { }
-			else this.emulator.skipInstruction(true);
+			else this.emulator.skipInstruction();
 			
 		}),
 		
 		IFE: new Op(this, "IFE", OPERATION_IFE, 2, function(a, b) { 
 			var aVal = a.getA(), bVal = b.getB();
 			if(bVal === aVal) { }
-			else this.emulator.skipInstruction(true);
+			else this.emulator.skipInstruction();
 		}),
 		
 		IFN: new Op(this, "IFN", OPERATION_IFN, 2, function(a, b) { 
 			var aVal = a.getA(), bVal = b.getB();
 			if(bVal !== aVal) { }
-			else this.emulator.skipInstruction(true);
+			else this.emulator.skipInstruction();
 		}),
 		
 		IFG: new Op(this, "IFG", OPERATION_IFG, 2, function(a, b) { 
 			var aVal = a.getA(), bVal = b.getB();
 			if(bVal > aVal) { }
-			else this.emulator.skipInstruction(true);
+			else this.emulator.skipInstruction();
 		}),
 		
 		IFA: new Op(this, "IFA", OPERATION_IFA, 2, function(a, b) { 
 			var aVal = Utils.to32BitSigned(a.getA()), bVal = Utils.to32BitSigned(b.getB());
 			if(bVal > aVal) { }
-			else this.emulator.skipInstruction(true);
+			else this.emulator.skipInstruction();
 		}),
 		
 		IFL: new Op(this, "IFL", OPERATION_IFL, 2, function(a, b) { 
 			var aVal = a.getA(), bVal = b.getB();
 			if(bVal < aVal) { }
-			else this.emulator.skipInstruction(true);
+			else this.emulator.skipInstruction();
 		}),
 		
 		IFU: new Op(this, "IFU", OPERATION_IFU, 2, function(a, b) { 
 			var aVal = Utils.to32BitSigned(a.getA()), bVal = Utils.to32BitSigned(b.getB());
 			if(bVal < aVal) { }
-			else this.emulator.skipInstruction(true);
+			else this.emulator.skipInstruction();
 		}),
 		
 		
@@ -773,7 +773,7 @@ function Emulator() {
 		return this.Values[new String(val)];
 	};
 	
-	this.skipInstruction = function(skipAgain) {
+	this.skipInstruction = function() {
 		var instruction = Utils.parseInstruction(this.program[this.PC.inc()]);
 		this.CPU_CYCLE++;
 		
@@ -782,9 +782,11 @@ function Emulator() {
 		if(instruction.opcode != 0)
 			this.getParamValue(instruction.b).get();
 		
-		if(skipAgain && instruction.opcode >= OPERATION_IFB && instruction.opcode <= OPERATION_IFU) {
-			// skip additional instruction at cost of an additional cycle
-			this.skipInstruction(false);
+		if(instruction.opcode >= OPERATION_IFB && instruction.opcode <= OPERATION_IFU) {
+			// if we have skipped a conditional instruction, skip additional instruction 
+			// at cost of an additional cycle.  continue until a non-conditional instruction
+			// has been skipped
+			this.skipInstruction();
 		}
 		
 	};
