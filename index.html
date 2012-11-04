@@ -112,8 +112,15 @@
 					<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
 					  <span class="ui-dialog-title" title="Displays the value of the emulator's RAM.">Memory</span>
 					  
-					  <div id="memory_goto_button" class="right titlebar-icon" title="Jump the memory window to the location of RAM entered in the text box."><div class="ui-icon ui-icon-circle-arrow-s"></div></div>
-					  <input id="memory_goto_input" type="text" class="right" />
+						<div id="memory_goto_button" class="right titlebar-icon" title="Jump the memory window to the location of RAM entered in the text box."><div class="ui-icon ui-icon-circle-arrow-s"></div></div>
+						<input id="memory_goto_input" type="text" class="right" />
+						
+						<div class="right" style="margin-top: 2px; margin-right: 20px;">
+							Collapse zeros
+						</div>
+						<div class="right" style="margin-top: 4px; margin-right: 3px;">
+							<input type="checkbox" id="collapse_empty_checkbox" style="margin: 0" /> 
+						</div>
 					  
 					</div>
 					<div id="memory_container" class="dialog_contents ui-dialog-content ui-widget-content scrolling_contents">
@@ -192,7 +199,7 @@
 							<div class="clear"></div>
 						</div>
 						<div id="register-SP">
-							<div class="register-name SP">SP:</div>
+							<div class="register-name"><span class="SP">SP</span>:</div>
 							<div class="left">
 								<span class="register-value">0x0000</span>
 								[<span class="register-memory-value">0x0000</span>]
@@ -200,7 +207,7 @@
 							<div class="clear"></div>
 						</div>
 						<div id="register-PC">
-							<div class="register-name PC">PC:</div>
+							<div class="register-name"><span class="PC">PC</span>:</div>
 							<div class="left">
 								<span class="register-value">0x0000</span>
 								[<span class="register-memory-value">0x0000</span>]
@@ -244,7 +251,7 @@
 		<div id="about_dialog" title="About DCPU-16 IDE">
 			<p><img src="images/logo.png" /></p>
 			<p>
-				DCPU-16 IDE version 0.5<br/>
+				DCPU-16 IDE version 0.6<br/>
 				&copy; 2012 <a href="http://twitter.com/#!/dangermccann" target="_tab">John McCann</a>
 			</p>
 			<p>DCPU-16 IDE is an assembler, debugger and emulator for <a href="http://0x10c.com" target="_tab">0x10c</a>.</p>

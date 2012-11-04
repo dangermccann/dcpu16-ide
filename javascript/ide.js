@@ -106,7 +106,7 @@ function init() {
 	
 	$("#listing").scroll(updateDebuggerLine);
 	$("#memory_container").scroll(updateMemoryWindow);
-	$("#memory_sizer").height(0x2003 * LINE_HEIGHT);
+	updateMemoryWindowHeight();
 	
 	$(".register-memory-value").click(function() { 
 		gotoMemoryLocation($(this).html());
@@ -120,6 +120,10 @@ function init() {
 		if(event.which == 13) { 
 			gotoMemoryLocation($("#memory_goto_input").val());
 		}
+	});
+	$("#collapse_empty_checkbox").change(function() { 
+		$("#memory_container").scrollTop(0);
+		updateMemoryWindow();
 	});
 	
 	$("#watches_add_button").click(function() {  
@@ -674,11 +678,31 @@ function updateMemoryWindow() {
 	startOffset = Math.min(startOffset, 0xffd0);
 	
 	var memHtml = "";
-	for(var i = 0; i < 10; i++) {
-		memHtml += "<div class=\"memory_offset\">" + Utils.hex2(startOffset + i*8) + "</div>";
-		memHtml += "<div class=\"memory_line\">"
+	var added = 0;
+	var collapse = getCollapseZeros();
+	for(var i = 0; added < 10; i++) {
+		var offset = startOffset + i*8;
+		if(offset > 0xfff8)
+			break;
+			
+		if(collapse) {
+			// check for all 0s
+			var zeros = true;
+			for(var l = 0; l < 8; l++) {
+				if((emulator.RAM[startOffset + i*8 + l] || 0) != 0) {
+					zeros = false;
+					break;
+				}
+				
+			}
+			if(zeros) 
+				continue;
+		}
+		
+		memHtml += "<div class=\"memory_offset\">" + Utils.hex2(offset) + "</div>";
+		memHtml += "<div class=\"memory_line\">";
+		
 		for(var j = 0; j < 8; j++) {
-			var offset = startOffset + i*8 + j;
 			var span = "";
 			if(offset == emulator.Registers.PC.get())
 				span = "<span class=\"PC\">";
@@ -688,8 +712,10 @@ function updateMemoryWindow() {
 			if(span.length > 0)
 				memHtml += "</span>";
 			
+			offset++;
 		}
 		memHtml += "</div><div class=\"clear\"></div>";
+		added++;
 	}
 	$("#memory").html(memHtml);
 	$("#memory").css("top", ($("#memory_container").scrollTop() + 4) + "px");
@@ -700,6 +726,14 @@ function gotoMemoryLocation(location) {
 	if(isNaN(val)) return;
 	$("#memory_container").scrollTop(Math.floor(val / 8) * LINE_HEIGHT);
 	updateMemoryWindow();
+}
+
+function updateMemoryWindowHeight() {
+	$("#memory_sizer").height(0x2003 * LINE_HEIGHT);
+}
+
+function getCollapseZeros() {
+	return $("#collapse_empty_checkbox").is(':checked');
 }
 
 function updateWatches() {
