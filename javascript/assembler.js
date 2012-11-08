@@ -384,6 +384,9 @@ Assembler =  {
 							if(token.isNumericLiteral()) {
 								offset++;
 							}
+							else if(token.type == "label_ref") {
+								offset++;
+							}
 							else if(token.type == "string") {
 								// remove quotes
 								var str = token.lexeme.substr(1, token.lexeme.length-2);
@@ -450,6 +453,9 @@ Assembler =  {
 							// data blocks
 							if(token.isNumericLiteral()) {
 								dat.push(parseNumericLiteral(token.lexeme));
+							}
+							else if(token.type == "label_ref") {
+								dat.push(this.getLabelValue(token, output.labels));
 							}
 							else if(token.type == "string") {
 								// remove quotes 
