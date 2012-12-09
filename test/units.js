@@ -759,6 +759,14 @@ function units() {
 		input =  "-2";
 		result = Assembler.evaluateExpression(Tokenizer.tokenize(input).lines[0], 0, 1);
 		equal(result[0].lexeme, Utils.to16BitSigned(-2));
+		
+		input =  "~1";
+		result = Assembler.evaluateExpression(Tokenizer.tokenize(input).lines[0], 0, 1);
+		equal(result[0].lexeme, 0xfffe);
+		
+		input =  "5^2";
+		result = Assembler.evaluateExpression(Tokenizer.tokenize(input).lines[0], 0, 1);
+		equal(result[0].lexeme, 7);
 	});
 	
 	
@@ -798,6 +806,107 @@ function units() {
 						0x8b81, 0x4032, 0x0003, 0x7f81, 
 						0x0003   ];
 						
+		var actual = Assembler.compileSource(input).bytecode();
+		ok(compareArrays(output, actual), "Output is correct");
+	});
+	
+	module("Preprocessor Module");
+	test("Test Define", function() { 
+		var input = ".define ABC 123\n" +
+					"SET A, [ABC]\n" +
+					".define ABC 456\n" +
+					"SET B, [ABC]\n";
+		
+		var output = [ 0x7801, 0x007b, 0x7821, 0x01c8 ];
+		var actual = Assembler.compileSource(input).bytecode();
+		ok(compareArrays(output, actual), "Output is correct");
+	});
+	
+	test("Test Undefine", function() { 
+		var input = ".define ABC 123\n" +
+					".undef ABC\n" +
+					".ifdef ABC\n" +
+					"SET A, [ABC]\n" +
+					".end\n" +
+					".define ABC 456\n" +
+					"DAT ABC\n";
+		
+		var output = [ 0x01c8 ];
+		var actual = Assembler.compileSource(input).bytecode();
+		ok(compareArrays(output, actual), "Output is correct");
+	});
+	
+	test("Test Expressions", function() { 
+		var input = ".define ABC 8\n" +
+					".define XYZ 5\n" +
+					".define TTT (ABC+4) << 2 + XYZ\n" +
+					"DAT TTT\n";
+		
+		var output = [ 0x0600 ];
+		var actual = Assembler.compileSource(input).bytecode();
+		ok(compareArrays(output, actual), "Output is correct");
+	});
+	
+	test("Test Conditionals 1", function() { 
+		var input = ".define ABC 0\n" +
+					".define XYZ 1\n" +
+					".if ABC\n" +
+					".define TTT 1\n" +
+					".elseif XYZ\n" +
+					".define TTT 2\n" +
+					".else\n" +
+					".define TTT 3\n" +
+					".end\n" +
+					"DAT TTT\n";
+		
+		var output = [ 0x0002 ];
+		var actual = Assembler.compileSource(input).bytecode();
+		ok(compareArrays(output, actual), "Output is correct");
+	});
+	
+	test("Test Conditionals 2", function() { 
+		var input = ".define ABC 0\n" +
+					".define XYZ 0\n" +
+					".if ABC\n" +
+					".define TTT 1\n" +
+					".elseif XYZ\n" +
+					".define TTT 2\n" +
+					".else\n" +
+					".define TTT 3\n" +
+					".end\n" +
+					"DAT TTT\n";
+		
+		var output = [ 0x0003 ];
+		var actual = Assembler.compileSource(input).bytecode();
+		ok(compareArrays(output, actual), "Output is correct");
+	});
+	
+	test("Test .org", function() { 
+		var input = ".org 4\n" +
+					"DAT 1\n";
+		var output = [ 0x0000, 0x0000, 0x0000, 0x0000, 0x0001 ];
+		var actual = Assembler.compileSource(input).bytecode();
+		ok(compareArrays(output, actual), "Output is correct");
+	});
+	
+	test("Test .dw", function() { 
+		var input = ".dw 1, 2, 3, 4\n"
+		var output = [ 0x0001, 0x0002, 0x0003, 0x0004 ];
+		var actual = Assembler.compileSource(input).bytecode();
+		ok(compareArrays(output, actual), "Output is correct");
+	});
+	
+	test("Test .dp", function() { 
+		var input = ".dp 1, 2, 3, 4\n"
+		var output = [ 0x0102, 0x0304 ];
+		var actual = Assembler.compileSource(input).bytecode();
+		ok(compareArrays(output, actual), "Output is correct");
+	});
+	
+	test("Test .fill", function() { 
+		var input = ".fill 4, 2\n" +
+					".fill 2\n";
+		var output = [ 0x0002, 0x0002, 0x0002, 0x0002, 0x0000, 0x0000 ];
 		var actual = Assembler.compileSource(input).bytecode();
 		ok(compareArrays(output, actual), "Output is correct");
 	});
@@ -854,7 +963,7 @@ function units() {
 		if(ary1.length != ary2.length)
 			return false;
 		for(var i = 0; i < ary1.length; i++) {
-			if(ary1[i] !== ary2[i])
+			if((ary1[i] || 0) !== (ary2[i] || 0))
 				return false;
 		}
 		return true;

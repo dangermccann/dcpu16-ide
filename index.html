@@ -77,6 +77,8 @@
 				<div id="source-dialog" class="ui-dialog ui-widget ui-widget-content ui-corner-all" style="right: 310px; left: 0px; bottom: 190px; top: 45px; width: auto;">
 					<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
 						<span id="editor_file_name" class="ui-dialog-title">Source</span>
+						
+						<div id="help_button" class="left titlebar-icon" style="margin: 0" title="Display the help dialog."><div class="ui-icon ui-icon-info"></div></div>
 					</div>
 					<div id="editor" class="ui-dialog-content ui-widget-content"></div>
 				</div>
@@ -251,7 +253,7 @@
 		<div id="about_dialog" title="About DCPU-16 IDE">
 			<p><img src="images/logo.png" /></p>
 			<p>
-				DCPU-16 IDE version 0.6<br/>
+				DCPU-16 IDE version 0.9<br/>
 				&copy; 2012 <a href="http://twitter.com/#!/dangermccann" target="_tab">John McCann</a>
 			</p>
 			<p>DCPU-16 IDE is an assembler, debugger and emulator for <a href="http://0x10c.com" target="_tab">0x10c</a>.</p>
@@ -284,6 +286,35 @@
 				</div>
 				<div class="clear"></div>
 			</div>
+		</div>
+		
+		<div id="help_dialog" title="Help with DCPU-16 IDE" style="font-size: 0.9em">
+			<p><img src="images/logo.png" /></p>
+			<p>
+				This assembler is fully complient with version 1.7 of the 
+				<a href="https://raw.github.com/gatesphere/demi-16/master/docs/dcpu-specs/dcpu-1-7.txt" target="_blank">DCPU-16 specification</a>.
+				It also has built-in support for these devices: <br/>
+				<a href="http://0x10cwiki.com/wiki/Generic_keyboard" target="_blank">Generic Keyboard</a> &mdash;
+				<a href="http://0x10cwiki.com/wiki/Generic_Clock" target="_blank">Generic Clock</a> &mdash;
+				<a href="http://0x10cwiki.com/wiki/LEM1802_Display" target="_blank">LEM1802 Display</a> &mdash;
+				<a href="https://raw.github.com/0x10cStandardsCommittee/0x10c-Specifications/master/COMMUNITY/HIT_HMD2043.txt" target="_blank">HMD2043 Media Drive</a>
+			</p>
+			<p>
+				The assembler includes a preprocessor that supports a subset of the preprocessor directives mentioned in the
+				<a href="https://raw.github.com/0x10cStandardsCommittee/0x10c-Standards/master/ASM/Spec_0xSCA.txt" target="_blank">0xSCA specification</a>
+				maintained by the <a href="https://github.com/0x10cStandardsCommittee" target="_blank">0x10c Standards Committee</a>.  
+			</p>
+			<p>
+				The following preprocessor directives work:	<br/>
+				org, define, def, eq, undef, ifdef, ifndef, if, else elseif, elif, end, echo, error, dw, dp, fill
+			</p>
+			<p>
+				These preprocessor directives will be supported soon:<br/>
+				macro, ascii, rep, align, include, incbin
+			</p>
+			<p>
+				Please provide feedback and report bugs <a href="javascript:UserVoice.showPopupWidget();" title="Open feedback & support dialog (powered by UserVoice)">here</a>.
+			</p>
 		</div>
 		
 	</body>

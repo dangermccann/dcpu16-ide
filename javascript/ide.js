@@ -104,6 +104,20 @@ function init() {
 	$("#cpu_speed_values").children().first().addClass("ui-selected");
 	
 	
+	$("#help_dialog").dialog({ 
+		modal: true, 
+		autoOpen: false, 
+		resizable: false,
+		minWidth: 640,
+		buttons: { 
+			"Close": function() {  
+				$(this).dialog("close"); 
+				editor.focus();
+			}
+		} 
+	});
+	
+	
 	$("#listing").scroll(updateDebuggerLine);
 	$("#memory_container").scroll(updateMemoryWindow);
 	updateMemoryWindowHeight();
@@ -138,6 +152,9 @@ function init() {
 		selected: function(event, ui) { 
 			$("#watches_list").data("selected", ui.selected.id);
 		}
+	});
+	$("#help_button").click(function() { 
+		help();
 	});
 
 	editor = ace.edit("editor");
@@ -381,28 +398,30 @@ function randomId() {
 }
 
 function assemble(data) {
-	var tokenized = Tokenizer.tokenize(data || editor.getSession().getValue());
-	listing = Assembler.compile(tokenized.lines);
+	$("#assembly").empty();
+
+	var input = data || editor.getSession().getValue();
+	listing = Assembler.compileSource(input);
 	
-	var errors = (new Array()).concat(tokenized.errors, listing.errors);
+	var str = "";
+	for(var i = 0; i < listing.messages.length; i++) {
+		str += "<div class='output_message'>" + listing.messages[i] + "</div>";
+	}
 	
-	//$("#assembly").html(listing.htmlFormat());
-	
-	if(errors.length == 0) {
-		$("#assembly").html("OK");
-		$("#assembly").css("background", "none");
+	if(listing.errors.length == 0) {
+		str += "<div class='output_message'>OK</div>";
+		$("#assembly").removeClass("failed");
 	}
 	else {
-		$("#assembly").css("background", "#bc3329");
-		var str = "";
-		for(var i = 0; i < errors.length; i++) {
-			str += "<div onclick='gotoLine("+errors[i].line+")' style='padding: 4px; margin-bottom: 3px; cursor: pointer;'>";
-			str += "Line " + errors[i].line + ": ";
-			str += errors[i].message;
+		$("#assembly").addClass("failed");
+		for(var i = 0; i < listing.errors.length; i++) {
+			str += "<div onclick='gotoLine("+listing.errors[i].line+")' class='output_error'>";
+			str += "Line " + listing.errors[i].line + ": ";
+			str += listing.errors[i].message;
 			str += "</div>";
 		}
-		$("#assembly").html(str);
 	}
+	$("#assembly").append(str);
 	
 	$("#output").html(listing.bytecodeText());
 }
@@ -852,4 +871,10 @@ function about() {
 	document.activeElement.blur();
 	
 	_gaq.push(['_trackEvent', "general", "about"]);
+}
+
+function help() {
+	$("#help_dialog").dialog("open");
+	document.activeElement.blur();
+	_gaq.push(['_trackEvent', "general", "help"]);
 }

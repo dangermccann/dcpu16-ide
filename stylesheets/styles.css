@@ -138,6 +138,26 @@ textarea {
 	color: #aaaaaa !important;
 }
 
+#assembly {
+	border-top: 6px solid #257505;
+}
+
+#assembly.failed {
+	border-top: 6px solid #bc3329;
+}
+
+.output_message {
+	padding-left: 4px;
+	margin-bottom: 1px;
+}
+
+.output_error {
+	padding-left: 4px;
+	margin-bottom: 1px;
+	color: #ea3e32;
+	cursor: pointer;
+}
+
 .bytecode {
 	color: #ffffff;
 	width: 170px;
@@ -196,6 +216,10 @@ textarea {
 }
 .space {  }
 
+.preprocessor {  
+	color: #ffd200;
+}
+
 
 .register-name {
 	float: left;
@@ -234,6 +258,9 @@ textarea {
 }
 .ace_variable { 
 	color: #fe9fde; 
+}
+.ace_preprocessor { 
+	color: #ffd200;
 }
 
 .PC {
