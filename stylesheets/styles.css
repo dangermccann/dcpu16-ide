@@ -14,6 +14,11 @@ body {
 	float: left;
 }
 
+.heading {
+	font-weight: bold;
+	font-size: 16px;
+}
+
 #toolbar {
 	padding: 3px;
 	margin-top: 2px;
@@ -377,28 +382,44 @@ textarea {
 	margin-left: 6px;
 }
 
+.hr {
+	height: 1px;
+	margin-top: 3px;
+	margin-bottom: 3px;
+	background: #666;
+}
+
 .settings_label {
 	float: left;
-	width: 110px;
+	width: 180px;
 }
 
 .settings_value {
 	float: left;
 	width: 200px;
+	height: 30px;
 }
 
-#cpu_speed_values span  {
+.settings_value span  {
 	padding: 4px;
 	border: 1px solid #ffffff;
 	cursor: pointer;
 }
 
-#cpu_speed_values .ui-selecting { 
+.settings_value .ui-selecting { 
 	background: #dbffb0; 
 	color: black; 
 }
-#cpu_speed_values .ui-selected { 
+.settings_value .ui-selected { 
 	background: #9fda58; 
 	color: black; 
+}
 
+.settings_value .disabled {
+	cursor: default;
+	opacity: 0.5;
+}
+
+.sped3 { 
+	border: 6px solid #716c8c;
 }

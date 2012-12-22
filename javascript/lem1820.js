@@ -60,6 +60,7 @@ function Monitor(_emulator) {
 	this.canvas.height = this.zoom * 96;
 	this.canvas.style.backgroundColor = "#777777";
 	this.canvas.className = "lem1820";
+	this.canvas.title="LEM1802 Low Energy Monitor";
 	this.setBorderColor(this.borderColor);
 	document.body.appendChild(this.canvas);
 	this.context = this.canvas.getContext('2d');
@@ -220,11 +221,18 @@ Monitor.prototype.memDumpPalette = function(offset) {
 
 Monitor.prototype.setBorderColor = function(color) {
 	this.borderColor = this.palette[color & 0xf];
-	this.canvas.style.border = (4+this.zoom) + "px solid " + Utils.color16To32(this.borderColor);
+	this.canvas.style.border = (3*this.zoom) + "px solid " + Utils.color16To32(this.borderColor);
 }
 
 Monitor.prototype.getDOMElement = function() {
 	return this.canvas;
+}
+
+Monitor.prototype.setZoom = function(_zoom) {
+	this.zoom = _zoom;
+	this.canvas.width = this.zoom * 128;
+	this.canvas.height = this.zoom * 96;
+	this.canvas.style.borderWidth = (3*this.zoom)  + "px";
 }
 
 

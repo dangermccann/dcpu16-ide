@@ -1,5 +1,6 @@
 require 'sinatra'
 require 'aws-sdk'
+require 'json'
 
 set :public_folder, File.dirname(__FILE__)
 
@@ -11,7 +12,11 @@ post '/program' do
 	program = params[:program]
 	program_id = params[:program_id]
 	if !program.nil? && !program_id.nil?
-		programs().items.put(:program_id => program_id, :program => params[:program])
+		programs().items.put(
+			:program_id => program_id, 
+			:program => params[:program], 
+			:hardware => params[:hardware]
+		)
 		return "OK"
 	else
 		return [400, "You did not specify a program or a program_id"]
@@ -20,6 +25,15 @@ end
 
 get '/program/:id' do
 	return programs().items[params[:id]].attributes[:program]
+end
+
+get '/program.json/:id' do
+	program = programs().items[params[:id]]
+	return { 
+		:program => program.attributes[:program], 
+		:program_id => program.attributes[:program_id], 
+		:hardware => program.attributes[:hardware]
+	}.to_json
 end
 
 def programs
@@ -31,4 +45,10 @@ def programs
 	return programs
 end
 
+if ENV['AWS_ACCESS_KEY_ID'].nil? 
+	$stderr.puts "You forgot to set AWS_ACCESS_KEY_ID!"
+end
+if ENV['AWS_SECRET_ACCESS_KEY'].nil? 
+	$stderr.puts "You forgot to set AWS_SECRET_ACCESS_KEY!"
+end
 

@@ -167,6 +167,13 @@ Utils = {
 		return val & 0xffff;
 	},
 	
+	byteTo32BitSigned: function(val) {
+		if((val & 0x80) > 0) {
+			return (((~val) + 1) & 0xff) * -1;	// two's complement
+		}
+		return val;
+	},
+	
 	roundTowardsZero: function(val) {
 		if(val < 0)
 			val = Math.ceil(val);

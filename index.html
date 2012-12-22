@@ -13,13 +13,16 @@
 		<script type="text/javascript" src="javascript/hmd2043.js"></script>
 		<script type="text/javascript" src="javascript/keyboard.js"></script>
 		<script type="text/javascript" src="javascript/clock.js"></script>
+		<script type="text/javascript" src="javascript/gl-matrix-min.js"></script>
+		<script type="text/javascript" src="javascript/webgl-utils.js"></script>
+		<script type="text/javascript" src="javascript/sped3.js"></script>
 		<script type="text/javascript" src="javascript/ace/ace.js" charset="utf-8"></script>
 		<script type="text/javascript" src="javascript/ace/theme-monokai.js" charset="utf-8"></script>
 		<script type="text/javascript" src="javascript/ace/mode-dcpu16.js" charset="utf-8"></script>
 		<script type="text/javascript" src="javascript/ide.js"></script>
 		<script type="text/javascript">
 		  var _gaq = _gaq || [];
-		  _gaq.push(['_setAccount', 'UA-32543076-1']);
+		  //_gaq.push(['_setAccount', 'UA-32543076-1']);
 		  _gaq.push(['_trackPageview']);
 
 		  (function() {
@@ -65,7 +68,7 @@
 					<div class="right" id="cycles" style="margin-top: 2px"></div>
 				</div>
 				<div style="height: auto; width: auto;" class="ui-dialog-content ui-widget-content">
-					<div id="monitor" title="LEM1802 Low Energy Monitor"></div>
+					<div id="monitor"></div>
 					<div class="left" id="media-drive" title="HDM2043 Harold Media Drive"></div>
 					<div id="toggle_media_button" class="left mini-button" title="Inserts or ejects media from the HMD2043 drive.">Insert Media</div>
 					<div class="clear"></div>
@@ -253,7 +256,7 @@
 		<div id="about_dialog" title="About DCPU-16 IDE">
 			<p><img src="images/logo.png" /></p>
 			<p>
-				DCPU-16 IDE version 0.9<br/>
+				DCPU-16 IDE version 0.9a<br/>
 				&copy; 2012 <a href="http://twitter.com/#!/dangermccann" target="_tab">John McCann</a>
 			</p>
 			<p>DCPU-16 IDE is an assembler, debugger and emulator for <a href="http://0x10c.com" target="_tab">0x10c</a>.</p>
@@ -285,6 +288,11 @@
 					<span>10 Hz</span>
 				</div>
 				<div class="clear"></div>
+				
+				<div class="hr"></div>
+				<p class="heading">Project Hardware Settings</p>
+				
+				<div id="hardware_settings"></div>
 			</div>
 		</div>
 		
@@ -294,11 +302,14 @@
 				This assembler is fully complient with version 1.7 of the 
 				<a href="https://raw.github.com/gatesphere/demi-16/master/docs/dcpu-specs/dcpu-1-7.txt" target="_blank">DCPU-16 specification</a>.
 				It also has built-in support for these devices: <br/>
-				<a href="http://0x10cwiki.com/wiki/Generic_keyboard" target="_blank">Generic Keyboard</a> &mdash;
-				<a href="http://0x10cwiki.com/wiki/Generic_Clock" target="_blank">Generic Clock</a> &mdash;
-				<a href="http://0x10cwiki.com/wiki/LEM1802_Display" target="_blank">LEM1802 Display</a> &mdash;
-				<a href="https://raw.github.com/0x10cStandardsCommittee/0x10c-Specifications/master/COMMUNITY/HIT_HMD2043.txt" target="_blank">HMD2043 Media Drive</a>
+				<a href="http://0x10cwiki.com/wiki/Generic_keyboard" target="_blank">Generic Keyboard</a>,
+				<a href="http://0x10cwiki.com/wiki/Generic_Clock" target="_blank">Generic Clock</a>,
+				<a href="http://0x10cwiki.com/wiki/LEM1802_Display" target="_blank">LEM1802 Display</a>,
+				<a href="https://raw.github.com/0x10cStandardsCommittee/0x10c-Specifications/master/COMMUNITY/HIT_HMD2043.txt" target="_blank">HMD2043 Media Drive</a>,
+				<a href="http://dcpu.com/3d-vector-display/" target="_blank">SPED-3 Display</a>
+				<br/>
 			</p>
+			<p>Use the Settings dialog to manage the connected hardware in each of your programs.</p>
 			<p>
 				The assembler includes a preprocessor that supports a subset of the preprocessor directives mentioned in the
 				<a href="https://raw.github.com/0x10cStandardsCommittee/0x10c-Standards/master/ASM/Spec_0xSCA.txt" target="_blank">0xSCA specification</a>
@@ -317,5 +328,32 @@
 			</p>
 		</div>
 		
+		<!-- Shaders for SPED3 -->
+		<script id="shader-vs" type="x-shader/x-vertex">
+			attribute vec3 aVertexPosition;
+			attribute vec4 aVertexColor;
+
+			uniform mat4 uMVMatrix;
+			uniform mat4 uPMatrix;
+			
+			varying vec4 vColor;
+			
+			
+			void main(void) {
+				gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+				vColor = aVertexColor;
+			}
+		</script>
+		<script id="shader-fs" type="x-shader/x-fragment">
+			precision mediump float;
+			
+			varying vec4 vColor;
+
+			void main(void) {
+				gl_FragColor = vColor;
+			}
+		</script>
+
+
 	</body>
 </html>
