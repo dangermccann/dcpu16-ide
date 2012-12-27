@@ -418,6 +418,19 @@ Preprocessor = {
 		return args;
 	},
 	
+	org: function(preLine, line) {
+		var org = Preprocessor.nextNonSpace(preLine, 1);
+		if(org != null && org.isNumericLiteral()) {
+			var orgVal = parseNumericLiteral(org.lexeme);
+			if(orgVal >= 0 && orgVal <= 0xffff)
+				return orgVal;
+			else this.throwInvalid(line+1, null, "Invalid use of .org");
+		}
+		else {
+			this.throwInvalid(line+1, null, "Invalid use of .org");
+		}
+	},
+	
 	nextNonSpace: function(ary, start) {
 		for(var i = start; i < ary.length; i++) {
 			if(ary[i].type != "space")
@@ -666,7 +679,17 @@ Assembler =  {
 					
 					// handle initial operation
 					if(command == null && dat == null) {
-						if(token.type == "space" || token.type == "comment" || token.type == "preprocessor") { }
+						if(token.type == "space" || token.type == "comment") { }
+						
+						else if(token.type == "preprocessor") {
+							// handle preprocessor .org
+							var preLine = Preprocessor.tokenizeLine(token.lexeme.substr(1), i);
+							var directive = preLine[0].lexeme;
+							if(directive == "org") {
+								offset = Preprocessor.org(preLine, i);
+							}
+						}
+						
 						else if(token.type == "command") {
 							command = token;
 							offset++;
@@ -746,16 +769,7 @@ Assembler =  {
 							var preLine = Preprocessor.tokenizeLine(token.lexeme.substr(1), i);
 							var directive = preLine[0].lexeme;
 							if(directive == "org") {
-								var org = Preprocessor.nextNonSpace(preLine, 1);
-								if(org != null && org.isNumericLiteral()) {
-									var orgVal = parseNumericLiteral(org.lexeme);
-									if(orgVal >= 0 && orgVal <= 0xffff)
-										offset = orgVal;
-									else this.throwInvalid(i+1, null, "Invalid use of .org");
-								}
-								else {
-									this.throwInvalid(i+1, null, "Invalid use of .org");
-								}
+								offset = Preprocessor.org(preLine, i);
 							}
 							else if(directive == "dw") {
 								dat = Preprocessor.getArguments(preLine, 1, j+1, {});
