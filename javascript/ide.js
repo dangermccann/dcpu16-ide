@@ -21,6 +21,11 @@ urlParams = {};
 	   urlParams[d(e[1])] = d(e[2]);
 })();
 
+if(typeof console == "undefined") {
+	console = {log: function(){}}
+}
+
+
 $(document).ready(function(){	
 	init();
 });
