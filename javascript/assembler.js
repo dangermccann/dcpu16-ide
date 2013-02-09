@@ -34,6 +34,7 @@ Tokenizer = {
 		{ pattern: /^(\+|\-|\*|\/|%|\(|\)|\&|\||\^|>>|<<|~|\^)/,		
 													type: "operator"		},
 		{ pattern: /^([\s]+)/,						type: "space" 			},
+		{ pattern: /^(<|>)/,						type: "bracket"			},
 	],
 	
 	tokenize: function(input) {
@@ -137,9 +138,12 @@ function AssemblerArgument() {
 }
 
 Preprocessor = { 
-	preprocess: function(input) {
+	preprocess: function(input, filesForIncludes) {
+		filesForIncludes = filesForIncludes || {};
 		var messages = [];
 		var errors = [];
+		var lineMap = {};
+		var totalLines = 0;
 		
 		// split and tokenize lines
 		var lines = input.split("\n");
@@ -169,7 +173,7 @@ Preprocessor = {
 					}
 					break;
 				}
-				else if(line[j] != ' ' && line[j] != '\t') {
+				else { 
 					// not a preprocessor directive
 					tokenizedLines.push([ new Token(line, "general") ]);
 					break;
@@ -310,22 +314,58 @@ Preprocessor = {
 					}	
 					// we've already handled conditionals
 					else if(directive == "if" || directive == "else" || directive == "elif" || directive == "elseif" 
-						|| directive == "end" || directive == "ifdef" || directive == "ifndef") { }	
+						|| directive == "end" || directive == "ifdef" || directive == "ifndef" || directive == "include") { }	
 					else
 						errors.push({ name: "PreprocessorError", message: "Sorry, this preprocessor doesn't support '" + directive + "'", line: (i+1) });
 					
 				}
 			}
 			
-			// reconstruct the program from eacn line
+			// reconstruct the program from each line
 			for(var j = 0; j < tokenizedLines[i].length; j++) {
 				if(!includeInOutput) continue;
 				
-				if(tokenizedLines[i][j].type == "directive")
-					output += ".";
-				output += tokenizedLines[i][j].lexeme;
+				var token = tokenizedLines[i][j];
+				
+				if(token.type == "directive" && token.lexeme == "include") {
+					
+					try {
+						var includeArgs = this.getArguments(tokenizedLines[i], 1, i+1, defines, 0);
+						if(includeArgs.length == 1 && typeof includeArgs[0] == "string") {
+							// actually include the file, and preprocess it as well
+							var filename = includeArgs[0];
+							var quotes = /\"(.*)\"/;
+							filename = filename.match(quotes) ? filename.match(quotes)[1] : filename;
+							var file = filesForIncludes[filename];
+							if(file) {
+								var includeOutput = Preprocessor.preprocess(file, filesForIncludes);
+								
+								messages.concat(includeOutput.messages);
+								errors.concat(includeOutput.errors);
+								output += includeOutput.output;
+								totalLines += includeOutput.output.split("\n").length - 1;
+							}
+							else
+								errors.push({ name: "PreprocessorError", message: "File not found: " + includeArgs[0], line: (i+1) });
+						}
+						else {
+							errors.push({ name: "PreprocessorError", message: "Invalid include", line: (i+1) });
+						}
+					} catch(e) {
+						errors.push(e);
+					}
+					
+					break;
+				}
+				else {
+					if(token.type == "directive")
+						output += ".";
+					output += token.lexeme;
+				}
 			}
 			output += "\n";
+			lineMap[i] = totalLines;
+			totalLines++;
 		}
 		
 		if(conditionals.length > 0)
@@ -335,7 +375,7 @@ Preprocessor = {
 		
 		//console.log(output)
 		
-		return { output: output, messages: messages, errors: errors };
+		return { output: output, messages: messages, errors: errors, lineMap: lineMap };
 	},
 	
 	tokenizeLine: function(line, i) {
@@ -386,7 +426,7 @@ Preprocessor = {
 		var skipCount = 0;
 		
 		for(j = start; j < tokens.length; j++) {
-			if(tokens[j].type == "space" || tokens[j].type == "directive"  || tokens[j].type == "comma")
+			if(tokens[j].type == "space" || tokens[j].type == "bracket" || tokens[j].type == "directive"  || tokens[j].type == "comma")
 				continue;
 				
 			if(tokens[j].type == "identifier" && skipCount >= replaceAfter) {
@@ -397,7 +437,7 @@ Preprocessor = {
 		}
 
 		for(j = start; j < tokens.length; j++) {
-			if(tokens[j].type == "space" || tokens[j].type == "directive"  || tokens[j].type == "comma")
+			if(tokens[j].type == "space" || tokens[j].type == "bracket" || tokens[j].type == "directive"  || tokens[j].type == "comma")
 				continue;
 				
 			var t;
@@ -891,12 +931,13 @@ Assembler =  {
 		
 	},
 	
-	compileSource: function(source) {
-		var preOutput = Preprocessor.preprocess(source);
+	compileSource: function(source, filesForIncludes) {
+		var preOutput = Preprocessor.preprocess(source, filesForIncludes);
 		var tokenized = Tokenizer.tokenize(preOutput.output);
 		var _listing = this.compile(tokenized.lines);
 		_listing.errors = preOutput.errors.concat(tokenized.errors, _listing.errors);
 		_listing.messages = preOutput.messages.concat(_listing.messages);
+		_listing.lineMap = preOutput.lineMap;
 		return _listing;
 	},
 	

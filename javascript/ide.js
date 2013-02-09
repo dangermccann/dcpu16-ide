@@ -234,7 +234,7 @@ function init() {
 		if (e.clientX > 25 + target.getBoundingClientRect().left)
 			return;
 
-		toggleBreakpoint(e.row);
+		toggleBreakpoint(editorLineToListingLine(e.row));
 	});
 	
 	emulator = new Emulator();
@@ -476,7 +476,7 @@ function assemble(data) {
 	$("#assembly").empty();
 
 	var input = data || editor.getSession().getValue();
-	listing = Assembler.compileSource(input);
+	listing = Assembler.compileSource(input, userData.files);
 	
 	var str = "";
 	for(var i = 0; i < listing.messages.length; i++) {
@@ -723,7 +723,24 @@ function realtimeUpdate() {
 	updateCycles();
 }
 
+function listingLineToEditorLine(listingLineNumber) {
+	for(editorLine in listing.lineMap) {
+		if(listing.lineMap[editorLine] == listingLineNumber)
+			return editorLine;
+	}
+	return -1;
+}
+
+function editorLineToListingLine(editorLineNumber) {
+	if(listing.lineMap[editorLineNumber] == null) 
+		return -1;
+	return listing.lineMap[editorLineNumber];
+}
+
+// expects a listing line number
 function toggleBreakpoint(lineNumber) {
+	if(lineNumber < 0) return;
+	
 	console.log("Toggle breakpoint on line " + lineNumber);
 		
 	// only allow breakpoints on lines that have actual commands
@@ -732,10 +749,13 @@ function toggleBreakpoint(lineNumber) {
 		_debugger.toggleBreakpoint(listing.lines[lineNumber].offset, lineNumber);
 		
 		
-		if(editor.session.getBreakpoints()[lineNumber])
-			editor.session.clearBreakpoint(lineNumber);
-		else
-			editor.session.setBreakpoint(lineNumber);
+		var editorLine = listingLineToEditorLine(lineNumber);
+		if(editorLine >= 0) {
+			if(editor.session.getBreakpoints()[editorLine])
+				editor.session.clearBreakpoint(editorLine);
+			else	
+				editor.session.setBreakpoint(editorLine);
+		}
 	}
 	
 	_gaq.push(['_trackEvent', "debugger", "toggleBreakpoint"]);
