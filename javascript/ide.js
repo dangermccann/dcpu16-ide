@@ -116,7 +116,7 @@ function init() {
 	});
 	$("#selectable_file_list").selectable({
 		selected: function(event, ui) { 
-			$("#selectable_file_list").data("selected", event.srcElement.innerHTML);
+			$("#selectable_file_list").data("selected", $(event.srcElement).data("filename"));
 		}
 	});
 	
@@ -353,11 +353,18 @@ function persist() {
 }
 
 function _open() {
+	popupateOpenFiles();
+	
+	$("#open_dialog").dialog("open");
+	_gaq.push(['_trackEvent', "editor", "open"]);
+}
+
+function popupateOpenFiles() {
 	var str = "";
 	for(var f in userData.files) {
-		str += "<li class='ui-widget-content'>";
+		str += "<li class='ui-widget-content' data-filename='"+f+"'>";
 		str += f;
-		//str += "<div style='margin-top: -3px;' class='right ui-icon ui-icon-trash'></div>";
+		str += "<div style='margin-top: -3px;' class='right ui-icon ui-icon-trash'></div>";
 		str += "</li>";
 	}
 	if(str.length == 0)
@@ -366,13 +373,19 @@ function _open() {
 	$("#selectable_file_list").data("selected", null);
 	
 	$("#selectable_file_list").find(".ui-icon-trash").mousedown(function(evt) { 
-		evt.preventDefault();
-		console.log($(this).parent().text());
+		evt.stopPropagation();
+		
+		var filename = $(this).parent().text();
+		if(confirm("Do you really want to delete the file: " + filename + "?")) {
+			console.log("deleting " + filename);
+			delete userData.files[filename];
+			persist();
+			_gaq.push(['_trackEvent', "editor", "deleteFile"]);
+			
+			popupateOpenFiles();
+		}
 		
 	});
-	
-	$("#open_dialog").dialog("open");
-	_gaq.push(['_trackEvent', "editor", "open"]);
 }
 
 function openFile(filename) {
