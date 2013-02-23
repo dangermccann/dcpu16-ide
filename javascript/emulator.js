@@ -665,7 +665,8 @@ function Emulator() {
 		
 		// load program into RAM
 		for(var i = 0; i < this.program.length; i++) {
-			this.RAM[i] = this.program[i];
+			if(this.program[i] != undefined)
+				this.RAM[i] = this.program[i];
 		}
 		
 		if(!this.async) {
