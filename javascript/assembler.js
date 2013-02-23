@@ -10,7 +10,7 @@ Tokenizer = {
 		{ pattern: /^(\".*\")/,						type: "string"			},
 		{ pattern: /^(:[0-9A-Za-z_\.]+)/,			type: "label_def"		},
 		{ pattern: /^([0-9A-Za-z_\.]+:)/,			type: "label_def"		},
-		{ pattern: /^\b(POP|PUSH|PEEK|DAT)\b/i,		type: "reserved_word"	},		
+		{ pattern: /^\b(POP|PUSH|PEEK|PICK|DAT)\b/i,type: "reserved_word"	},		
 		{ pattern: /^\b(SET|ADD|SUB|MUL|MLI|DIV|DVI|MOD|MDI|AND|BOR|XOR|SHR|ASR|SHL|IFB|IFC|IFE|IFN|IFG|IFA|IFL|IFU|ADX|SBX|STI|STD|JSR|INT|IAG|IAS|RFI|IAQ|HWN|HWQ|HWI)\b/i,
 													type: "command"			},
 		{ pattern: /^\b([ABCXYZIJ]|SP|PC|EX)\b/i,	type: "register"		},
@@ -669,6 +669,8 @@ Assembler =  {
 					argument.value = Values.SP_OFFSET;
 				else if(token.lexeme == "PEEK")
 					argument.value = Values.SP_OFFSET + 1;
+				else if(token.lexeme == "PICK")
+					argument.value = Values.SP_OFFSET + 2;
 			}
 			else if(token.type == "open_bracket") {
 				argument.memoryTarget = true;

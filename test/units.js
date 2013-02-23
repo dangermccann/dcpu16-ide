@@ -810,6 +810,20 @@ function units() {
 		ok(compareArrays(output, actual), "Output is correct");
 	});
 	
+	test("Assembly Test 3 (stack)", function() { 
+		var input = "; test app #3\n" + 
+					 "SET PUSH, 1\n" +
+					 "SET A, POP\n" +
+					 "ADD Z, PEEK\n" +
+					 "ADD Y, PICK\n" +
+					 "DAT 1\n";
+		
+		var output = [ 0x8b01, 0x6001, 0x64a2, 0x6882, 0x0001 ];
+						
+		var actual = Assembler.compileSource(input).bytecode();
+		ok(compareArrays(output, actual), "Output is correct");
+	});
+	
 	module("Preprocessor Module");
 	test("Test Define", function() { 
 		var input = ".define ABC 123\n" +
