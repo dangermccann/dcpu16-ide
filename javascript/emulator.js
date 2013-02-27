@@ -383,60 +383,60 @@ function Emulator() {
 		
 		ADD: new Op(this, "ADD", OPERATION_ADD, 2, function(a, b) { 
 			var res = a.getA() + b.getB();
-			b.set(res & 0xffff);
 			if((res & 0xffff0000) > 0)
 				this.emulator.Registers.EX.set(0x0001);
 			else
 				this.emulator.Registers.EX.set(0);
+			b.set(res & 0xffff);
 		}),
 		
 		SUB: new Op(this, "SUB", OPERATION_SUB, 2, function(a, b) { 
 			var aVal = a.getA();
 			var res = b.getB() - aVal;
-			b.set(res & 0xffff);
 			if((res) < 0)
 				this.emulator.Registers.EX.set(0xffff);
 			else
 				this.emulator.Registers.EX.set(0);
+			b.set(res & 0xffff);
 			
 		}),
 		
 		MUL: new Op(this, "MUL", OPERATION_MUL, 2, function(a, b) { 
 			var res = a.getA() * b.getB();
-			b.set(res & 0xffff);
 			this.emulator.Registers.EX.set((res >> 16) & 0xffff);
+			b.set(res & 0xffff);
 		}),
 		
 		MLI: new Op(this, "MLI", OPERATION_MLI, 2, function(a, b) { 
 			var aVal = Utils.to32BitSigned(a.getA()), bVal = Utils.to32BitSigned(b.getB());
 			var res = bVal * aVal;
-			b.set(Utils.to16BitSigned(res));
 			this.emulator.Registers.EX.set((res >> 16) & 0xffff);
+			b.set(Utils.to16BitSigned(res));
 		}),
 		
 		DIV: new Op(this, "DIV", OPERATION_DIV, 3, function(a, b) { 
 			var aVal = a.getA(), bVal = b.getB();
 			if(aVal === 0) {
-				b.set(0);
 				this.emulator.Registers.EX.set(0);
+				b.set(0);
 			}
 			else {			
 				var res = Math.floor(bVal / aVal);
-				b.set(res & 0xffff);
 				this.emulator.Registers.EX.set(Math.floor(((bVal << 16) / aVal)) & 0xffff);
+				b.set(res & 0xffff);
 			}
 		}),
 		
 		DVI: new Op(this, "DVI", OPERATION_DVI, 3, function(a, b) { 
 			var aVal = Utils.to32BitSigned(a.getA()), bVal = Utils.to32BitSigned(b.getB());
 			if(aVal === 0) {
-				b.set(0);
 				this.emulator.Registers.EX.set(0);
+				b.set(0);
 			}
 			else {			
 				var res = Utils.roundTowardsZero(bVal / aVal);
-				b.set(Utils.to16BitSigned(res));
 				this.emulator.Registers.EX.set(Utils.roundTowardsZero(((bVal << 16) / aVal)) & 0xffff);
+				b.set(Utils.to16BitSigned(res));
 			}
 		}),
 		
@@ -473,20 +473,20 @@ function Emulator() {
 		
 		SHR: new Op(this, "SHR", OPERATION_SHR, 1, function(a, b) { 
 			var aVal = a.getA(), bVal = b.getB();
-			b.set(bVal >>> aVal);
 			this.emulator.Registers.EX.set(((bVal << 16 ) >> aVal) & 0xffff);
+			b.set(bVal >>> aVal);
 		}),
 		
 		ASR: new Op(this, "ASR", OPERATION_ASR, 1, function(a, b) { 
 			var aVal = a.getA(), bVal = Utils.to32BitSigned(b.getB());
-			b.set((bVal >> aVal) & 0xffff);
 			this.emulator.Registers.EX.set(((bVal << 16) >>> aVal) & 0xffff);
+			b.set((bVal >> aVal) & 0xffff);
 		}),
 		
 		SHL: new Op(this, "SHL", OPERATION_SHL, 1, function(a, b) { 
 			var aVal = a.getA(), bVal = b.getB();
-			b.set((bVal << aVal) & 0xffff);
 			this.emulator.Registers.EX.set(((bVal << aVal) >> 16) & 0xffff);
+			b.set((bVal << aVal) & 0xffff);
 		}),
 		
 		IFB: new Op(this, "IFB", OPERATION_IFB, 2, function(a, b) { 
@@ -542,15 +542,15 @@ function Emulator() {
 		
 		ADX: new Op(this, "ADX", OPERATION_ADX, 3, function(a, b) { 
 			var res = a.getA() + b.getB() + this.emulator.Registers.EX.get();
-			b.set(res & 0xffff);
 			this.emulator.Registers.EX.set(res > 0xffff ? 1 : 0);
+			b.set(res & 0xffff);
 		}),
 		
 		SBX: new Op(this, "SBX", OPERATION_SBX, 3, function(a, b) { 
 			var aVal = a.getA(), bVal = b.getB();
 			var res = bVal - aVal + this.emulator.Registers.EX.get();
-			b.set(res & 0xffff);
 			this.emulator.Registers.EX.set(res < 0 ? 0xffff : 0);
+			b.set(res & 0xffff);
 		}),
 		
 		STI: new Op(this, "STI", OPERATION_STI, 2, function(a, b) { 
