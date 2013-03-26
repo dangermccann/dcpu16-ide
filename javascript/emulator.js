@@ -740,7 +740,7 @@ function Emulator() {
 	};
 	
 	this.nextInstruction = function() {
-		var data = this.program[this.PC.inc()];
+		var data = this.RAM[this.PC.inc()];
 		var instruction = Utils.parseInstruction(data);
 		var op; 
 		if(instruction.opcode === 0) {
@@ -774,7 +774,7 @@ function Emulator() {
 	
 	this.nextWord = function() {
 		this.CPU_CYCLE++;
-		return this.program[this.Registers.PC.inc()];
+		return this.RAM[this.Registers.PC.inc()];
 	};
 	
 	this.getParamValue = function(val) {
@@ -782,7 +782,7 @@ function Emulator() {
 	};
 	
 	this.skipInstruction = function() {
-		var instruction = Utils.parseInstruction(this.program[this.PC.inc()]);
+		var instruction = Utils.parseInstruction(this.RAM[this.PC.inc()]);
 		this.CPU_CYCLE++;
 		
 		// skip "next word" values by invoking get() on the params
