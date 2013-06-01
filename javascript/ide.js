@@ -124,7 +124,7 @@ function init() {
 		modal: true, 
 		autoOpen: false, 
 		resizable: false,
-		minWidth: 420,
+		minWidth: 520,
 		buttons: { 
 			"Close": function() {  
 				$(this).dialog("close"); 

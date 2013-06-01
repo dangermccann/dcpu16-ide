@@ -207,14 +207,14 @@ Monitor.prototype.memMapPalette = function(offset) {
 
 Monitor.prototype.memDumpFont = function(offset) {
 	for(var i = 0; i < 256; i++) {
-		this.emulator.RAM[offset+i] = this.emulator.RAM[this.fontOffset + i];
+		this.emulator.RAM[offset+i] = this.defaultFont[i];
 	}
 	this.emulator.CPU_CYCLE += 256;
 }
 
 Monitor.prototype.memDumpPalette = function(offset) {
 	for(var i = 0; i < 16; i++) {
-		this.emulator.RAM[offset+i] = this.palette[i];
+		this.emulator.RAM[offset+i] = this.defaultPalette[i];
 	}
 	this.emulator.CPU_CYCLE += 16;
 }

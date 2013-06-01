@@ -254,6 +254,8 @@ Utils = {
 
 Speeds = {
 	"100 kHz": { "delayFrequency": 1000, "delayTime": 1 },
+	"10 kHz": { "delayFrequency": 50, "delayTime": 1 },
+	"1 kHz": { "delayFrequency": 10, "delayTime": 10 },
 	"100 Hz": { "delayFrequency": 10, "delayTime": 100 },
 	"10 Hz": { "delayFrequency": 1, "delayTime": 100 },
 };

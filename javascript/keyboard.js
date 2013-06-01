@@ -26,9 +26,6 @@ Keyboard.prototype.keyDown = function(event) {
 			return true;
 		
 		this.downKeys[""+code] = true;
-		
-		if(code >= 0x90)
-			return true;
 
 		// TODO: some apps seem to assume that key input should go to this magical address...
 		this.emulator.RAM[0x9000 + this.keys.length % 0xf] = code;
@@ -58,6 +55,9 @@ Keyboard.prototype.convert = function(code, event) {
 		// backspace
 		case 8:
 			return 0x10;
+		// tab
+		case 9:
+			return 0x09;
 		// return
 		case 13:
 			return 0x11;
@@ -88,6 +88,39 @@ Keyboard.prototype.convert = function(code, event) {
 		// space
 		case 32:
 			return 0x20;
+		// semicolon
+		case 186:
+			return 0x3B;
+		// equal sign
+		case 187:
+			return 0x3D;
+		// comma
+		case 188:
+			return 0x2C;
+		// dash
+		case 189:
+			return 0x2D;
+		// period
+		case 190:
+			return 0x2E;
+		// forward slash
+		case 191:
+			return 0x2F;
+		// grave accent
+		case 192:
+			return 0x60;
+		// open bracket
+		case 219:
+			return 0x5B;
+		// backslash
+		case 220:
+			return 0x5C;
+		// close bracket
+		case 221:
+			return 0x5D;
+		// single quote
+		case 222:
+			return 0x27;
 			
 		default:
 			if(code >= 0x20 && code <= 0x7f) {
@@ -112,9 +145,10 @@ Keyboard.prototype.interrupt = function() {
 		
 		case 1:
 			var val = 0;
-			if(this.keys.length > 0)
+			if(this.keys.length > 0) {
 				val = this.keys[0];
 				this.keys.splice(0, 1);
+			}
 			this.emulator.Registers.C.set(val);
 			break;
 		

@@ -391,12 +391,12 @@ textarea {
 
 .settings_label {
 	float: left;
-	width: 180px;
+	width: 172px;
 }
 
 .settings_value {
 	float: left;
-	width: 200px;
+	width: 320px;
 	height: 30px;
 }
 
