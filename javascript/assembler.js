@@ -3,7 +3,8 @@ Tokenizer = {
 
 	tokens: [
 		{ pattern: /^(;.*)/,						type: "comment"			},
-		{ pattern: /^([\.#].*)/,					type: "preprocessor"	},
+		{ pattern: /^([\.#](include|incbin|def|define|equ|undef|dw|dp|fill|ascii|org|macro|end|rep|if|elif|elseif|else|ifdef|ifndef|error|align|echo).*)/,
+													type: "preprocessor"	},
 		{ pattern: /^\b(0x[0-9ABCDEF]+)\b/i,		type: "hexidecimal"		},
 		{ pattern: /^\b(0b[0-1]+)\b/i,				type: "binary"			},
 		{ pattern: /^\b([0-9]+)\b/,					type: "decimal"			},
@@ -14,7 +15,7 @@ Tokenizer = {
 		{ pattern: /^\b(SET|ADD|SUB|MUL|MLI|DIV|DVI|MOD|MDI|AND|BOR|XOR|SHR|ASR|SHL|IFB|IFC|IFE|IFN|IFG|IFA|IFL|IFU|ADX|SBX|STI|STD|JSR|INT|IAG|IAS|RFI|IAQ|HWN|HWQ|HWI)\b/i,
 													type: "command"			},
 		{ pattern: /^\b([ABCXYZIJ]|SP|PC|EX)\b/i,	type: "register"		},
-		{ pattern: /^\b([0-9A-Za-z_\.]+)\b/,		type: "label_ref"		},
+		{ pattern: /^([0-9A-Za-z_\.]+)/,			type: "label_ref"		},
 		{ pattern: /^(\[)/,							type: "open_bracket"	},
 		{ pattern: /^(\])/,							type: "close_bracket"	},		
 		{ pattern: /^(,)/,							type: "comma"			},
