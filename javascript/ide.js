@@ -25,6 +25,21 @@ if(typeof console == "undefined") {
 	console = {log: function(){}}
 }
 
+window.onerror = function (message, file, line, column, errorObj) {
+	var url = "/error?";
+	url += "msg=" + encodeURIComponent(message) + "&";
+	url += "file=" + encodeURIComponent(file) + "&";
+	url += "line=" + encodeURIComponent(line) + "&";
+	url += "st=" + encodeURIComponent(errorObj !== undefined ? errorObj.stack : "");
+	
+    $.ajax({
+		url: 			url,
+		success: 		function(data) { 
+			console.log("reported error");
+		}
+	});
+}
+
 
 $(document).ready(function(){	
 	init();

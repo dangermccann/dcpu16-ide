@@ -36,6 +36,10 @@ get '/program.json/:id' do
 	}.to_json
 end
 
+get '/error' do
+	puts("JavaScript Error : msg=#{params[:msg]} file=#{params[:file]} line=#{params[:line]} #{params[:st]}")
+end
+
 def programs
 	dynamo_db = AWS::DynamoDB.new(
                 :access_key_id => ENV['AWS_ACCESS_KEY_ID'],
