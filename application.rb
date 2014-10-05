@@ -3,6 +3,7 @@ require 'aws-sdk'
 require 'json'
 
 set :public_folder, File.dirname(__FILE__)
+set :protection, :except => :ip_spoofing
 
 get '/' do
   send_file 'index.html'
