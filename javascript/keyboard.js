@@ -153,6 +153,7 @@ Keyboard.prototype.interrupt = function() {
 			break;
 		
 		case 2:
+			var bVal = this.emulator.Registers.B.get();
 			if(this.downKeys[""+bVal])
 				this.emulator.Registers.C.set(1);
 			else
