@@ -771,6 +771,9 @@ Assembler =  {
 								var str = removeQuotes(token.lexeme);
 								offset += str.length;
 							}
+              else if(token.type == "command" || token.type == "reserved_word"){
+                this.throwInvalid(i+1, token, "Invalid value to use in a data block: " + token.lexeme);
+              }
 						}
 					}
 				}
