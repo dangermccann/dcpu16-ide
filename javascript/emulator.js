@@ -29,8 +29,7 @@ function RegisterPlusNextWord(_register) {
 }
 RegisterPlusNextWord.prototype.getB = RegisterPlusNextWord.prototype.getA = RegisterPlusNextWord.prototype.get = function() { 
 	var nw = this.emulator.nextWord();
-	if(nw == 0xffff) nw = -1;	// TODO: why is this like this???? (required for '99 bottles' to work...)
-	this.cachedResult = this.register.get() + nw;
+	this.cachedResult = (this.register.get() + nw) & 0xFFFF;
 	return this.emulator.RAM[this.cachedResult] || 0; 
 }
 RegisterPlusNextWord.prototype.set = function(val) { 
