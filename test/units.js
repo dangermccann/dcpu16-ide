@@ -194,7 +194,23 @@ function units() {
 		equal(e.Registers.B.get(), 0x0e, "Register B is quotient of B and A");
 		equal(e.Registers.I.get(), 0xAAAA, "Register I shows overflow from first operation");
 		equal(e.Registers.Y.get(),  0x4c, "Register Y is quotient of 0xD8F0 and 0xEB20");
-		//equal(e.Registers.EX.get(), 0x723a, "Register EX shows overflow");
+		equal(e.Registers.EX.get(), 0x723a, "Register EX shows overflow");
+	});
+  
+  test("DIV Test 2", function() { 
+		//expect(1);
+		
+		var program = [
+			Utils.makeInstruction(OPERATION_SET, Values.NEXT_WORD_LITERAL, REGISTER_A), 0x9503,
+			Utils.makeInstruction(OPERATION_DIV, REGISTER_A, REGISTER_A)
+		];
+		
+		var e = new Emulator();
+		e.async = false;
+		e.run(program);
+		
+		equal(e.Registers.A.get(), 0x01, "Register A is quotient of A and A");
+		equal(e.Registers.EX.get(), 0x0, "Register EX shows zero overflow");
 	});
 	
 	test("DVI Test", function() { 
@@ -217,7 +233,7 @@ function units() {
 		equal(e.Registers.B.get(), 0xFFF2, "Register B is quotient of B and A");
 		equal(e.Registers.I.get(), 0x5556, "Register I shows overflow from first operation");
 		equal(e.Registers.Y.get(),  0xFFFD, "Register Y is quotient of 0xD8F0 and 0xEB20");
-		//equal(e.Registers.EX.get(), 0x723a, "Register EX shows overflow");
+		equal(e.Registers.EX.get(), 0x723a, "Register EX shows overflow");
 	});
 	
 	test("MOD Test", function() { 

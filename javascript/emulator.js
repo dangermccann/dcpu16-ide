@@ -180,6 +180,10 @@ Utils = {
 			val = Math.floor(val);
 		return val;
 	},
+  
+  shiftLeft16: function(val, bits) {
+    return (val << bits) >>> 0;
+  },
 	
 	makeInstruction: function(opcode, a, b) {
 		var instruction = opcode;
@@ -423,7 +427,7 @@ function Emulator() {
 			}
 			else {			
 				var res = Math.floor(bVal / aVal);
-				this.emulator.Registers.EX.set(Math.floor(((bVal << 16) / aVal)) & 0xffff);
+				this.emulator.Registers.EX.set(Math.floor((Utils.shiftLeft16(bVal, 16) / aVal)) & 0xffff);
 				b.set(res & 0xffff);
 			}
 		}),
@@ -436,7 +440,7 @@ function Emulator() {
 			}
 			else {			
 				var res = Utils.roundTowardsZero(bVal / aVal);
-				this.emulator.Registers.EX.set(Utils.roundTowardsZero(((bVal << 16) / aVal)) & 0xffff);
+				this.emulator.Registers.EX.set(Utils.roundTowardsZero((Utils.shiftLeft16(bVal, 16) / aVal)) & 0xffff);
 				b.set(Utils.to16BitSigned(res));
 			}
 		}),
