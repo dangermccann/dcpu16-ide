@@ -699,7 +699,7 @@ function Emulator() {
 			
 			// process one interrupt if we have one
 			if(this.interruptQueueingEnabled == false && this.interruptQueue.length > 0) {
-				this.processInterrupt(this.interruptQueue.pop());
+				this.processInterrupt(this.interruptQueue.shift());
 			}
 			
 			return true;
