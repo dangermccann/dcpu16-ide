@@ -56,6 +56,20 @@ function units() {
 		
 	});
 	
+  test("SET PC Test", function() { 
+		
+		var program = [
+      Utils.makeInstruction(OPERATION_SET, REGISTER_PC, Values.NEXT_WORD_VALUE), 0x2222,
+		];
+		
+		var e = new Emulator();
+		e.async = false;
+		e.run(program);
+		
+		equal(e.Registers.PC.get(), 2, "Register PC set correctly");
+		equal(e.RAM[0x2222], 2, "RAM location is set to value of 2");		
+	});
+  
 	test("SP Test", function() { 
 		//expect(1);
 		

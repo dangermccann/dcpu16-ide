@@ -377,7 +377,14 @@ function Emulator() {
 
 	this.BasicOperations = {
 		SET: new Op(this, "SET", OPERATION_SET, 1, function(a, b) { 
-			var aVal = a.getA(), bVal = b.getB();
+      var aVal = a.getA();
+      var bVal = b.getB();  
+      
+      // Workaround for the case where retrieving the B value increments the PC, and the A operand is the PC register.
+      // In this case the desired behavior is for the PC to return the value after being incremented from the B retrieval.
+      if(a.name === "PC")
+        aVal = a.getA();
+			
 			b.set(aVal);
 			
 			// TODO: some applications assume that setting PC to itself should terminate the application
